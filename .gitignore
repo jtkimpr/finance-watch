@@ -64,3 +64,10 @@ dmypy.json
 .env
 *.env
 secrets.json
+
+# Next.js website
+website/node_modules/
+website/.next/
+website/.env.local
+website/.env*.local
+website/tsconfig.tsbuildinfo

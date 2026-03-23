@@ -35,15 +35,25 @@ jobs:
       - name: Generate portfolio JSON
         run: python scripts/generate_portfolio_json.py
 
+      - name: Update strategy prices
+        env:
+          FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
+        run: python scripts/update_prices.py
+
+      - name: Update holdings data
+        env:
+          FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
+        run: python scripts/update_holdings.py || true
+
       - name: Commit and push if data changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/watchlist.xlsx data/portfolio.json
+          git add data/watchlist.xlsx data/portfolio.json data/strategy/
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
             TIMESTAMP=$(TZ='Asia/Seoul' date '+%Y-%m-%d %H:%M')
-            git commit -m "data: update watchlist ${TIMESTAMP} KST"
+            git commit -m "data: update ${TIMESTAMP} KST"
             git push
           fi

@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+:root {
+  /* D&B 브랜드 컬러 — 다크 팔레트 (strategy.com 스타일) */
+  --background: #0c0c0e;
+  --foreground: #f0f0ee;
+
+  --color-cream:       #f0f0ee;
+  --color-beige:       #1e1e22;
+  --color-sand:        #8a8a92;
+  --color-brown-light: #c4a86a;
+  --color-brown:       #2a2a30;
+  --color-brown-dark:  #f0f0ee;
+  --color-accent:      #d4a853;
+
+  --color-text-primary:   #f0f0ee;
+  --color-text-secondary: #a0a0a8;
+  --color-text-muted:     #60606a;
+
+  --color-border:   #28282e;
+  --color-surface:  #141416;
+
+  --color-up:   #22c55e;
+  --color-down: #ef4444;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-cream:         var(--color-cream);
+  --color-beige:         var(--color-beige);
+  --color-sand:          var(--color-sand);
+  --color-brown-light:   var(--color-brown-light);
+  --color-brown:         var(--color-brown);
+  --color-brown-dark:    var(--color-brown-dark);
+  --color-accent:        var(--color-accent);
+
+  --color-text-primary:   var(--color-text-primary);
+  --color-text-secondary: var(--color-text-secondary);
+  --color-text-muted:     var(--color-text-muted);
+
+  --color-border:  var(--color-border);
+  --color-surface: var(--color-surface);
+
+  --color-up:   var(--color-up);
+  --color-down: var(--color-down);
+
+  --font-sans: "Noto Sans KR", "Inter", Arial, sans-serif;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
