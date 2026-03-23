@@ -2,12 +2,10 @@ name: Daily Watchlist Update
 
 on:
   schedule:
-    # All times are UTC. KST = UTC+9
-    - cron: "10 15 * * *"  # 00:10 KST
-    - cron: "10 0 * * *"   # 09:10 KST
-    - cron: "10 3 * * *"   # 12:10 KST
-    - cron: "10 7 * * *"   # 16:10 KST
-  workflow_dispatch:        # Manual trigger
+    # 맥미니 cron이 정시 트리거 담당 (workflow_dispatch)
+    # 아래는 맥미니 장애 시 백업용 (30분 지연 허용)
+    - cron: "40 0 * * *"   # 09:40 KST (backup)
+  workflow_dispatch:        # 맥미니 cron 및 수동 트리거
 
 permissions:
   contents: write
