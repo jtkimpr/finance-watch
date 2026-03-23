@@ -32,13 +32,17 @@ FINNHUB_API_KEY = os.environ["FINNHUB_API_KEY"]
 # ---------------------------------------------------------------------------
 # Column definitions
 # Price sheet columns (in order):
-#   Date, 0085P0, 182480, 232080, 360200, 361580, 379800, 379810, 411060,
-#   438080, 459580, 475630, 476760, Bitcoin, Ethereum, QQQM, SCHD, SGOV,
-#   SPYM, Strategy, Strategy Prf, Strategy Prf A, Strategy Prf D,
-#   Strategy Prf F, UB Care, USDT_KRW Upbit, USD_KRW, VGIT, VGLT, VIG, VTIP
+#   Date, 423160, 459580, 475630, SGOV,
+#   Strategy Prf, Strategy Prf A, Strategy Prf D, Strategy Prf F,
+#   USDT_KRW Upbit, USD_KRW,
+#   411060, 0085P0, 476760,
+#   VGIT, VGLT, VTIP,
+#   182480, 232080, 360200, 361580, 379800, 379810, 438080,
+#   UB Care, 0163Y0,
+#   QQQM, SCHD, SPYM, Strategy, VIG, Bitcoin, Ethereum
 #
 # Volume sheet columns (same but NO USD_KRW):
-#   Date, 0085P0, ..., VTIP  (USD_KRW column absent)
+#   Date, ..., UB Care, 0163Y0, QQQM, ..., Ethereum  (USD_KRW column absent)
 # ---------------------------------------------------------------------------
 
 PRICE_COLUMNS = [
@@ -51,7 +55,7 @@ PRICE_COLUMNS = [
     "VGIT", "VGLT", "VTIP",
     "182480", "232080", "360200", "361580",
     "379800", "379810", "438080",
-    "UB Care",
+    "UB Care", "0163Y0",
     "QQQM", "SCHD", "SPYM",
     "Strategy",
     "VIG",
@@ -68,7 +72,7 @@ VOLUME_COLUMNS = [
     "VGIT", "VGLT", "VTIP",
     "182480", "232080", "360200", "361580",
     "379800", "379810", "438080",
-    "UB Care",
+    "UB Care", "0163Y0",
     "QQQM", "SCHD", "SPYM",
     "Strategy",
     "VIG",
@@ -80,6 +84,7 @@ VOLUME_COLUMNS = [
 PYKRX_TICKERS = {
     "423160": "423160",
     "0085P0": "0085P0",
+    "0163Y0": "0163Y0",
     "182480": "182480",
     "232080": "232080",
     "360200": "360200",
