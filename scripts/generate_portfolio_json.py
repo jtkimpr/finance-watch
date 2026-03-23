@@ -97,15 +97,37 @@ def parse_admin_sheet(wb, info_lookup):
     return portfolios
 
 
+def load_prev_totals():
+    """기존 portfolio.json에서 각 멤버 총액 계산 → _prev_totals로 저장"""
+    if not os.path.exists(JSON_PATH):
+        return None
+    try:
+        with open(JSON_PATH, "r", encoding="utf-8") as f:
+            existing = json.load(f)
+        members = ["Susie", "Dirac & Broglie", "Jintae", "Hyunhee"]
+        prev = {}
+        for m in members:
+            holdings = existing.get(m, [])
+            prev[m] = sum(h.get("valuation", 0) for h in holdings)
+        return prev
+    except Exception as e:
+        print(f"[warn] prev_totals 로드 실패: {e}")
+        return None
+
+
 def main():
+    prev_totals = load_prev_totals()
+
     wb = openpyxl.load_workbook(XLSX_PATH, data_only=True)
     info_lookup  = build_info_lookup(wb)
     portfolios   = parse_admin_sheet(wb, info_lookup)
 
+    portfolios["_prev_totals"] = prev_totals
+
     with open(JSON_PATH, "w", encoding="utf-8") as f:
         json.dump(portfolios, f, ensure_ascii=False, indent=2)
 
-    summary = {k: len(v) for k, v in portfolios.items()}
+    summary = {k: len(v) if isinstance(v, list) else v for k, v in portfolios.items()}
     print(f"portfolio.json 생성 완료: {summary}")
 
 

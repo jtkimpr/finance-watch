@@ -123,16 +123,10 @@ interface Holding {
 const MEMBERS = ["Susie", "Jintae", "Hyunhee"] as const;
 type Member = (typeof MEMBERS)[number];
 
-const CATEGORIES = ["Total", "Cash", "Gold", "Kor Stock", "US Stock", "US Bonds", "Crypto"];
+const ALL_TABS = ["Total", "Susie", "Jintae", "Hyunhee"] as const;
+type Tab = (typeof ALL_TABS)[number];
 
-const CATEGORY_COLOR: Record<string, string> = {
-  "Cash":      "#4ade80",
-  "Gold":      "#d4a853",
-  "Kor Stock": "#60a5fa",
-  "US Stock":  "#a78bfa",
-  "US Bonds":  "#f472b6",
-  "Crypto":    "#f97316",
-};
+const CATEGORIES = ["Total", "Cash", "Gold", "Kor Stock", "US Stock", "US Bonds", "Crypto"];
 
 function formatPrice(price: number, currency: string) {
   if (currency === "USD") {
@@ -168,6 +162,169 @@ function computeAllocation(holdings: Holding[]) {
       color: COLOR_MAP[label] ?? "#888",
     }))
     .sort((a, b) => b.pct - a.pct);
+}
+
+const TOTAL_DISPLAY_MEMBERS = ["Total", "Dirac & Broglie", "Susie", "Jintae", "Hyunhee"] as const;
+const CATEGORY_ORDER = ["Crypto", "Cash", "Gold", "Kor Stock", "US Stock", "US Bonds"];
+const CATEGORY_COLOR: Record<string, string> = {
+  "Cash":      "#4ade80",
+  "Gold":      "#d4a853",
+  "Kor Stock": "#60a5fa",
+  "US Stock":  "#a78bfa",
+  "US Bonds":  "#f472b6",
+  "Crypto":    "#f97316",
+};
+
+interface MemberSummary {
+  total: number;
+  prevTotal: number | null;
+  allocation: Record<string, number>;
+}
+
+interface FamilyTotalData {
+  members: Record<string, MemberSummary>;
+  grandTotal: number;
+  grandPrevTotal: number | null;
+  grandAllocation: Record<string, number>;
+}
+
+function pctChange(curr: number, prev: number | null): string | null {
+  if (prev === null || prev === 0) return null;
+  const pct = ((curr - prev) / prev) * 100;
+  return (pct >= 0 ? "+" : "") + pct.toFixed(2) + "%";
+}
+
+function TotalView() {
+  const [data, setData] = useState<FamilyTotalData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/family-total")
+      .then((r) => r.json())
+      .then((d) => setData(d))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center" style={{ minHeight: "40vh" }}>
+        <p style={{ color: "#60606a", fontSize: 14 }}>데이터를 불러오는 중...</p>
+      </div>
+    );
+  }
+  if (!data) return null;
+
+  const { members, grandTotal, grandPrevTotal, grandAllocation } = data;
+  const grandChange = pctChange(grandTotal, grandPrevTotal);
+
+  return (
+    <div className="max-w-5xl">
+      {/* 총평가금액 카드 그리드 */}
+      <div className="grid grid-cols-2 gap-0 mb-0" style={{ borderBottom: "1px dashed #28282e" }}>
+        {/* Grand Total */}
+        <div className="py-8 px-0 pr-8" style={{ borderRight: "1px dashed #28282e" }}>
+          <p className="text-xs uppercase tracking-widest mb-3" style={{ color: "#60606a" }}>전체 합계</p>
+          <p className="text-4xl font-bold" style={{ color: "#f0f0ee" }}>
+            ₩{Math.round(grandTotal).toLocaleString()}
+          </p>
+          <div className="flex items-center gap-3 mt-2">
+            <p className="text-sm" style={{ color: "#60606a" }}>
+              약 {(grandTotal / 100000000).toFixed(1)}억원
+            </p>
+            {grandChange !== null && (
+              <span className="text-sm font-semibold" style={{ color: grandChange.startsWith("+") ? "#4ade80" : "#ef4444" }}>
+                {grandChange}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* 개인별 카드 */}
+        <div className="py-8 px-8">
+          <p className="text-xs uppercase tracking-widest mb-3" style={{ color: "#60606a" }}>개인별 현황</p>
+          <div className="flex flex-col gap-2">
+            {(["Dirac & Broglie", "Susie", "Jintae", "Hyunhee"] as const).map((m) => {
+              const info = members[m];
+              if (!info) return null;
+              const change = pctChange(info.total, info.prevTotal);
+              return (
+                <div key={m} className="flex items-center justify-between text-sm">
+                  <span style={{ color: "#8a8a92" }}>{m}</span>
+                  <div className="flex items-center gap-3">
+                    <span className="font-medium" style={{ color: "#f0f0ee" }}>
+                      ₩{Math.round(info.total).toLocaleString()}
+                    </span>
+                    {change !== null && (
+                      <span className="text-xs font-semibold w-16 text-right" style={{ color: change.startsWith("+") ? "#4ade80" : "#ef4444" }}>
+                        {change}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* 자산 카테고리별 비중 비교 */}
+      <div className="py-8">
+        <p className="text-xs uppercase tracking-widest mb-6" style={{ color: "#60606a" }}>자산 카테고리별 비중 비교</p>
+
+        {/* 범례 */}
+        <div className="flex flex-wrap gap-x-6 gap-y-1 mb-6">
+          {CATEGORY_ORDER.map((cat) => (
+            <div key={cat} className="flex items-center gap-1.5 text-xs">
+              <span className="w-2 h-2 rounded-full inline-block shrink-0" style={{ background: CATEGORY_COLOR[cat] ?? "#888" }} />
+              <span style={{ color: "#8a8a92" }}>{cat}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* 비중 바 테이블 */}
+        <div className="flex flex-col gap-4">
+          {TOTAL_DISPLAY_MEMBERS.map((label) => {
+            const alloc = label === "Total" ? grandAllocation : members[label]?.allocation ?? {};
+            const totalPct = Object.values(alloc).reduce((s, v) => s + v, 0);
+            if (totalPct === 0) return null;
+            return (
+              <div key={label}>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs font-medium" style={{ color: "#a0a0a8" }}>{label}</span>
+                </div>
+                <div className="flex h-5 rounded overflow-hidden">
+                  {CATEGORY_ORDER.map((cat) => {
+                    const pct = alloc[cat] ?? 0;
+                    if (pct === 0) return null;
+                    return (
+                      <div
+                        key={cat}
+                        style={{ width: `${pct}%`, background: CATEGORY_COLOR[cat] ?? "#888" }}
+                        title={`${cat}: ${pct.toFixed(1)}%`}
+                        className="relative group"
+                      />
+                    );
+                  })}
+                </div>
+                <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1.5">
+                  {CATEGORY_ORDER.map((cat) => {
+                    const pct = alloc[cat] ?? 0;
+                    if (pct === 0) return null;
+                    return (
+                      <span key={cat} className="text-xs" style={{ color: "#60606a" }}>
+                        <span style={{ color: CATEGORY_COLOR[cat] ?? "#888" }}>{cat}</span>{" "}
+                        <span style={{ color: "#a0a0a8", fontWeight: 600 }}>{pct.toFixed(1)}%</span>
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function MemberView({ member }: { member: Member }) {
@@ -330,7 +487,7 @@ function MemberView({ member }: { member: Member }) {
 export default function FamilyPage() {
   const [authed, setAuthed] = useState(false);
   const [checking, setChecking] = useState(true);
-  const [activeMember, setActiveMember] = useState<Member>("Susie");
+  const [activeTab, setActiveTab] = useState<Tab>("Total");
 
   useEffect(() => {
     if (sessionStorage.getItem("dnb_auth") === "1") setAuthed(true);
@@ -342,31 +499,34 @@ export default function FamilyPage() {
 
   return (
     <div>
-      {/* 멤버 탭 */}
+      {/* 탭 */}
       <div className="flex gap-3 mb-8">
-        {MEMBERS.map((m) => (
+        {ALL_TABS.map((tab) => (
           <button
-            key={m}
-            onClick={() => setActiveMember(m)}
+            key={tab}
+            onClick={() => setActiveTab(tab)}
             style={{
               padding: "8px 24px",
               borderRadius: 6,
               fontSize: 14,
-              fontWeight: activeMember === m ? 700 : 500,
-              background: activeMember === m ? "#FA660F" : "#1a1a1e",
-              color: activeMember === m ? "#fff" : "#8a8a92",
+              fontWeight: activeTab === tab ? 700 : 500,
+              background: activeTab === tab ? "#FA660F" : "#1a1a1e",
+              color: activeTab === tab ? "#fff" : "#8a8a92",
               border: "1px solid",
-              borderColor: activeMember === m ? "#FA660F" : "#28282e",
+              borderColor: activeTab === tab ? "#FA660F" : "#28282e",
               cursor: "pointer",
               transition: "all 0.15s",
             }}
           >
-            {m}
+            {tab}
           </button>
         ))}
       </div>
 
-      <MemberView member={activeMember} />
+      {activeTab === "Total"
+        ? <TotalView />
+        : <MemberView member={activeTab} />
+      }
     </div>
   );
 }

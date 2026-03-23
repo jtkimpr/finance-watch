@@ -14,7 +14,10 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Invalid member" }, { status: 400 });
   }
 
-  const res = await fetch(PORTFOLIO_JSON_URL, { cache: "no-store" }).catch(
+  const res = await fetch(PORTFOLIO_JSON_URL, {
+    cache: "no-store",
+    headers: { "Cache-Control": "no-cache", "Pragma": "no-cache" },
+  }).catch(
     (e) => { console.error("[family] fetch error:", e); return null; }
   );
   if (!res || !res.ok) {
