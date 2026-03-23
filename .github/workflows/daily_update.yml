@@ -32,11 +32,14 @@ jobs:
           FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
         run: python scripts/update_watchlist.py
 
+      - name: Generate portfolio JSON
+        run: python scripts/generate_portfolio_json.py
+
       - name: Commit and push if data changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/watchlist.xlsx
+          git add data/watchlist.xlsx data/portfolio.json
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
