@@ -2,13 +2,18 @@
 """
 generate_portfolio_json.py
 Admin 시트의 모든 포트폴리오 섹션을 읽어 data/portfolio.json 생성
-- 섹션 헤더(B열=None) 기준으로 구분
-- Info 시트에서 거래소/통화 정보 교차 참조
+
+수식 캐시 의존 제거:
+- Price 시트에서 직접 최신 가격 조회 (update_watchlist.py가 실제 숫자로 기록)
+- Admin F:L 열에서 실제 보유수량 합산
+- valuation = qty * price * exchange_rate 로 Python에서 직접 계산
 """
 
 import json
 import os
+import re
 import openpyxl
+from openpyxl.utils import column_index_from_string
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 XLSX_PATH = os.path.join(BASE_DIR, "..", "data", "watchlist.xlsx")
@@ -16,7 +21,6 @@ JSON_PATH = os.path.join(BASE_DIR, "..", "data", "portfolio.json")
 
 KRX_EXCHANGES = {"KRX", "KOSPI", "KOSDAQ"}
 
-# 거래소 정보 없이 통화가 명확한 특수 항목
 SPECIAL = {
     "KRW":  {"currency": "KRW", "exchange": "—", "ticker": "KRW"},
     "USD":  {"currency": "USD", "exchange": "—", "ticker": "USD"},
@@ -25,7 +29,7 @@ SPECIAL = {
 
 
 def build_info_lookup(wb):
-    """Info 시트에서 name/symbol → (currency, exchange, ticker) 매핑 생성"""
+    """Info 시트에서 name/symbol → (currency, exchange, ticker) 매핑"""
     ws = wb["Info"]
     lookup = {}
     for row in ws.iter_rows(min_row=2, values_only=True):
@@ -42,40 +46,137 @@ def build_info_lookup(wb):
     return lookup
 
 
-def parse_admin_sheet(wb, info_lookup):
+def build_price_lookup(wb):
+    """Price 시트 각 컬럼에서 최신 실제 숫자값 추출 (col_index → price)"""
+    ws = wb["Price"]
+    prices = {}
+    max_col = ws.max_column
+    for col_idx in range(2, max_col + 1):
+        for row_idx in range(2, min(ws.max_row + 1, 1000)):
+            val = ws.cell(row_idx, col_idx).value
+            if val is not None and isinstance(val, (int, float)):
+                prices[col_idx] = float(val)
+                break
+    return prices
+
+
+def build_info_price_lookup(wb, price_lookup):
+    """Info 시트 행 번호 → 가격 매핑 (Price 시트 참조 수식 해석)"""
+    ws = wb["Info"]
+    info_prices = {}
+    for row_idx in range(1, ws.max_row + 1):
+        val = ws.cell(row_idx, 5).value  # E열 = Price
+        if val is None:
+            continue
+        if isinstance(val, (int, float)):
+            info_prices[row_idx] = float(val)
+        elif isinstance(val, str):
+            m = re.match(r"=INDEX\(Price!([A-Z]+):", val)
+            if m:
+                col_idx = column_index_from_string(m.group(1))
+                info_prices[row_idx] = price_lookup.get(col_idx, 0.0)
+    return info_prices
+
+
+def resolve_N(row_num, ws_admin, info_prices, visited=None):
+    """Admin N열(가격) 해석: =Info!E{n}, =N{n} 체인, 또는 리터럴 숫자"""
+    if visited is None:
+        visited = set()
+    if row_num in visited:
+        return 0.0
+    visited.add(row_num)
+
+    cell_val = ws_admin.cell(row_num, 14).value  # N열 = 14번째
+    if cell_val is None:
+        return 0.0
+    if isinstance(cell_val, (int, float)):
+        return float(cell_val)
+    m = re.match(r"=Info!E(\d+)", str(cell_val))
+    if m:
+        return info_prices.get(int(m.group(1)), 0.0)
+    m = re.match(r"=N(\d+)", str(cell_val))
+    if m:
+        return resolve_N(int(m.group(1)), ws_admin, info_prices, visited)
+    return 0.0
+
+
+def resolve_O(row_num, ws_admin, info_prices, visited=None):
+    """Admin O열(환율) 해석: =Info!E{n}, =O{n} 체인, 또는 리터럴 숫자"""
+    if visited is None:
+        visited = set()
+    if row_num in visited:
+        return 1.0
+    visited.add(row_num)
+
+    val = ws_admin.cell(row_num, 15).value  # O열 = 15번째
+    if val is None:
+        return 1.0
+    if isinstance(val, (int, float)):
+        return float(val)
+    m = re.match(r"=Info!E(\d+)", str(val))
+    if m:
+        return info_prices.get(int(m.group(1)), 1.0)
+    m = re.match(r"=O(\d+)", str(val))
+    if m:
+        return resolve_O(int(m.group(1)), ws_admin, info_prices, visited)
+    return 1.0
+
+
+def parse_admin_sheet(wb, info_lookup, info_prices):
     ws = wb["Admin"]
     portfolios = {}
     current_section = None
 
-    for row in ws.iter_rows(min_col=1, max_col=14, values_only=True):
-        a, b = row[0], row[1]
+    for row_idx in range(1, ws.max_row + 1):
+        a = ws.cell(row_idx, 1).value
+        b = ws.cell(row_idx, 2).value
 
-        # 빈 행(구분자)
         if a is None and b is None:
             continue
 
-        # 섹션 헤더 행: B열이 None이고 A열에 이름이 있음
+        # 섹션 헤더: B열이 None이고 A열에 이름
         if b is None and a is not None:
-            current_section = str(a).strip()
+            a_str = str(a).strip()
+            # 헤더행 레이블(열 제목행) 제외
+            if a_str in ("KRW value",):
+                continue
+            current_section = a_str
             portfolios[current_section] = []
             continue
 
         if current_section is None or b is None:
             continue
 
-        name      = str(b).strip()
-        category  = str(a).strip()
-        valuation = float(row[3])  if row[3]  is not None else 0.0  # D열: 평가금액
-        qty       = float(row[4])  if row[4]  is not None else 0.0  # E열: 보유수량
-        price     = float(row[13]) if row[13] is not None else 0.0  # N열: 현재가
+        # 헤더 레이블행 건너뜀 (B열이 'Stock # ' 같은 헤더인 경우)
+        b_str = str(b).strip()
+        if b_str in ("Stock # ", "Stock price", "Fiat rate", "KRW value"):
+            continue
 
-        # 통화·거래소·티커 결정
+        name     = b_str
+        category = str(a).strip()
+
+        # qty: F:L열 합산 (col 6~12)
+        qty = sum(
+            float(ws.cell(row_idx, c).value)
+            for c in range(6, 13)
+            if ws.cell(row_idx, c).value is not None
+                and isinstance(ws.cell(row_idx, c).value, (int, float))
+        )
+
+        # price: N열 (col 14)
+        price = resolve_N(row_idx, ws, info_prices)
+
+        # exchange_rate: O열 (col 15)
+        exchange_rate = resolve_O(row_idx, ws, info_prices)
+
+        valuation = qty * price * exchange_rate
+
+        # 메타 정보
         if name in SPECIAL:
             meta = SPECIAL[name]
         elif name in info_lookup:
             meta = info_lookup[name]
         else:
-            # 폴백: 대문자 라틴 문자 위주면 USD, 아니면 KRW
             is_latin = all(c.isascii() for c in name.replace(" ", ""))
             meta = {
                 "currency": "USD" if is_latin else "KRW",
@@ -118,9 +219,12 @@ def load_prev_totals():
 def main():
     prev_totals = load_prev_totals()
 
-    wb = openpyxl.load_workbook(XLSX_PATH, data_only=True)
-    info_lookup  = build_info_lookup(wb)
-    portfolios   = parse_admin_sheet(wb, info_lookup)
+    # data_only=False: 수식 문자열을 직접 파싱하기 위해
+    wb = openpyxl.load_workbook(XLSX_PATH, data_only=False)
+    info_lookup   = build_info_lookup(wb)
+    price_lookup  = build_price_lookup(wb)
+    info_prices   = build_info_price_lookup(wb, price_lookup)
+    portfolios    = parse_admin_sheet(wb, info_lookup, info_prices)
 
     portfolios["_prev_totals"] = prev_totals
 
