@@ -280,9 +280,9 @@
       "exchange": "KOSDAQ",
       "category": "Kor Stock",
       "currency": "KRW",
-      "qty": 22305.0,
+      "qty": 101579.0,
       "price": 3935.0,
-      "valuation": 87770175.0
+      "valuation": 399713365.0
     },
     {
       "name": "KODEX 미국나스닥100(TR)",
@@ -409,9 +409,9 @@
   ],
   "Total": [],
   "_prev_totals": {
-    "Susie": 578686349.0429783,
-    "Dirac & Broglie": 4073054416.176915,
-    "Jintae": 519625961.18844974,
-    "Hyunhee": 232674313.58812544
+    "Susie": 581525139.3818009,
+    "Dirac & Broglie": 4101985047.5344176,
+    "Jintae": 520367563.2751292,
+    "Hyunhee": 233517842.35666138
   }
 }

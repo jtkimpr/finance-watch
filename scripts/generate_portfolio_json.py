@@ -156,12 +156,16 @@ def parse_admin_sheet(wb, info_lookup, info_prices):
         category = str(a).strip()
 
         # qty: F:L열 합산 (col 6~12)
-        qty = sum(
-            float(ws.cell(row_idx, c).value)
-            for c in range(6, 13)
-            if ws.cell(row_idx, c).value is not None
-                and isinstance(ws.cell(row_idx, c).value, (int, float))
-        )
+        def _parse_qty(val):
+            if val is None:
+                return 0.0
+            if isinstance(val, (int, float)):
+                return float(val)
+            if isinstance(val, str) and re.match(r'^=[\d\s\+\-\*\/\.]+$', val):
+                return float(eval(val[1:]))
+            return 0.0
+
+        qty = sum(_parse_qty(ws.cell(row_idx, c).value) for c in range(6, 13))
 
         # price: N열 (col 14)
         price = resolve_N(row_idx, ws, info_prices)
