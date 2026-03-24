@@ -52,7 +52,7 @@ finance-watch/
 | 8 | 맥미니 trigger.sh | git pull → watchlist.xlsx를 Documents 폴더로 복사 |
 | 백업 | GitHub Actions (09:40 KST) | schedule cron (맥미니 장애 시 백업) |
 
-- `trigger.sh` 위치: `/Users/jtmacmini/claude_works/finance-watch-trigger/trigger.sh`
+- `trigger.sh` 위치: `/Users/jtmacmini/claude_local/finance-watch-trigger/trigger.sh`
 - PAT 위치: `/Users/jtmacmini/.finance_pat`
 - PAT 주의: `delete_repo` 권한 없음 (레포 삭제는 GitHub 웹에서 직접)
 
@@ -72,6 +72,114 @@ finance-watch/
 https://raw.githubusercontent.com/jtkimpr/finance-watch/main/data/strategy/{name}.csv
 ```
 `cache: 'no-store'` 설정으로 항상 최신 데이터 사용.
+
+---
+
+## 웹사이트 기술 스택
+
+| 항목 | 내용 |
+|------|------|
+| 프레임워크 | Next.js 15 (App Router) |
+| 언어 | TypeScript |
+| 스타일 | Tailwind CSS + inline styles |
+| 차트 | lightweight-charts (MSTR 페이지) |
+| 배포 | Vercel (diracbroglie.com) |
+
+---
+
+## 웹사이트 파일 구조
+
+```
+website/src/
+├── app/
+│   ├── page.tsx                        # 루트 → /about 리다이렉트
+│   ├── globals.css                     # 다크 팔레트 전역 스타일
+│   ├── (dashboard)/
+│   │   ├── layout.tsx                  # 대시보드 레이아웃 (Navbar + 사이드바)
+│   │   ├── about/page.tsx              # Company 페이지 (공개)
+│   │   ├── investments/page.tsx        # Investments 페이지 (패스워드 보호)
+│   │   ├── mstr/page.tsx               # MSTR 페이지 (공개, 차트)
+│   │   └── family/page.tsx             # Family 페이지 (비밀번호 보호)
+│   └── api/
+│       ├── family/route.ts             # 멤버별 보유 종목 반환
+│       └── family-total/route.ts       # 전체 합계 + 전일 비교 + 카테고리 배분 반환
+└── components/layout/
+    ├── Navbar.tsx                      # 상단 오렌지 네비게이션 바
+    └── Sidebar.tsx                     # 좌측 사이드바
+```
+
+---
+
+## 디자인 스펙
+
+| 항목 | 값 |
+|------|----|
+| 배경 | `#0c0c0e` |
+| 텍스트 (주) | `#f0f0ee` |
+| 텍스트 (부) | `#a0a0a8` |
+| 텍스트 (dim) | `#60606a` |
+| 구분선 | `#28282e` |
+| 액센트 (오렌지) | `#FA660F` |
+| 폰트 | Inter (900/700/600/500/400) |
+| Body 텍스트 | 18px / line-height 1.7 |
+| 섹션 헤딩 | 20px / weight 600 |
+| 히어로 헤딩 | 52px / weight 900 |
+
+---
+
+## 페이지별 주요 기능
+
+### Company (`/about`)
+- 2컬럼 히어로: 헤드라인 + quant 차트 이미지
+- Investment Philosophy 3단 그리드 (01/02/03)
+- Company Info 테이블 (하단)
+
+### Investments (`/investments`)
+- 패스워드 게이트: 미인증 시 포트폴리오 대신 인라인 폼 표시
+- 인증 상태는 `sessionStorage`에 저장 (탭 닫으면 자동 로그아웃)
+- 핵심 지표: 총 평가금액 / 현 수익률
+- 자산 비중 바 (Cash / US Stock / US Bonds / Gold / Kor Stock)
+- 카테고리 필터 버튼 (Total / Cash / Gold / Kor Stock / US Stock / US Bonds)
+- 보유종목 테이블
+
+### MSTR (`/mstr`)
+- lightweight-charts 기반 캔들스틱 + 지표 차트
+- GitHub raw URL에서 실시간 CSV fetch
+- 기간 버튼 (Max / 1y / 6m / 3m / 1m / 7d) — React portal로 Navbar 중앙에 렌더링
+- 마우스 드래그 스크롤 비활성화 (`handleScroll: false, handleScale: false`)
+- 최신 데이터가 항상 오른쪽 끝 기준으로 표시
+
+### Navbar
+- 오렌지 sticky 바 (height: 48px, `position: sticky, top: 0, zIndex: 50`)
+- 중앙 슬롯 (`#navbar-center`): MSTR 페이지에서 portal로 기간 버튼 주입
+- 우측 사람 아이콘 → Admin 패널 모달
+
+---
+
+## 인증 구조
+
+### Investments 잠금 해제
+- 패스워드: `localStorage.getItem("dnb_password") || "980612"` (기본값)
+- 인증 성공 시 `sessionStorage.setItem("dnb_auth", "1")` 저장
+- 탭/브라우저 종료 시 자동 로그아웃
+
+### Admin 패널 (사람 아이콘)
+- Admin 패스워드: `localStorage.getItem("dnb_admin_password") || "jintae.kim.dnb@gmail.com"` (기본값)
+- 인증 후 Investments 패스워드 변경 가능
+- "Lock Investments" 버튼으로 현재 세션 강제 로그아웃
+
+### 스토리지 키 정리
+
+| localStorage 키 | 용도 | 기본값 |
+|-----------------|------|--------|
+| `dnb_password` | Investments 잠금 해제 패스워드 | `980612` |
+| `dnb_admin_password` | Admin 패널 진입 패스워드 | `jintae.kim.dnb@gmail.com` |
+
+| sessionStorage 키 | 용도 |
+|-------------------|------|
+| `dnb_auth` | Investments 인증 상태 (탭 닫으면 삭제) |
+
+> 패스워드 초기화: 브라우저 개발자 도구 → Application → Local Storage에서 해당 키 삭제
 
 ---
 
@@ -119,7 +227,7 @@ watchlist.xlsx (Admin 시트)
 
 - 서버 시작 스크립트: `/Users/jtmacmini/start-dnb.sh`
 - launch.json: `/Users/jtmacmini/.claude/launch.json` (서버명: `dnb-website`, 포트: 3000)
-- 작업 디렉토리: `/Users/jtmacmini/github-clone/finance-watch/website`
+- 작업 디렉토리: `/Users/jtmacmini/claude_github/finance-watch/website`
 
 ---
 
