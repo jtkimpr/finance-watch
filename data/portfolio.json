@@ -7,8 +7,8 @@
       "category": "Crypto",
       "currency": "USD",
       "qty": 1.7511246,
-      "price": 71024.859375,
-      "valuation": 185974269.08209348
+      "price": 69999.0859375,
+      "valuation": 183268731.46296927
     },
     {
       "name": "Ethereum",
@@ -17,8 +17,8 @@
       "category": "Crypto",
       "currency": "USD",
       "qty": 1.10666755,
-      "price": 2159.72998046875,
-      "valuation": 3573897.2436845973
+      "price": 2136.225341796875,
+      "valuation": 3534623.7734196023
     },
     {
       "name": "KRW",
@@ -48,7 +48,7 @@
       "currency": "USD",
       "qty": 10.89383819,
       "price": 1.0,
-      "valuation": 16289.4473071251
+      "valuation": 16287.704293014702
     },
     {
       "name": "KINDEX KRX금현물",
@@ -130,7 +130,7 @@
       "currency": "USD",
       "qty": 4883.0,
       "price": 1.0,
-      "valuation": 7303796.127685547
+      "valuation": 7304528.696899416
     },
     {
       "name": "STRC",
@@ -140,7 +140,7 @@
       "currency": "USD",
       "qty": 5335.0,
       "price": 99.83,
-      "valuation": 796631385.6691041
+      "valuation": 796711287.6293644
     },
     {
       "name": "KINDEX KRX금현물",
@@ -189,8 +189,8 @@
       "category": "US Stock",
       "currency": "USD",
       "qty": 2092.0,
-      "price": 242.0700073242188,
-      "valuation": 757468507.5982468
+      "price": 241.0,
+      "valuation": 754195953.7524416
     },
     {
       "name": "SCHD",
@@ -199,8 +199,8 @@
       "category": "US Stock",
       "currency": "USD",
       "qty": 8342.0,
-      "price": 30.54000091552734,
-      "valuation": 381066831.6683477
+      "price": 30.72500038146973,
+      "valuation": 383413639.0053413
     },
     {
       "name": "VTIP",
@@ -209,8 +209,8 @@
       "category": "US Bonds",
       "currency": "USD",
       "qty": 3580.0,
-      "price": 49.81999969482422,
-      "valuation": 266777172.36359227
+      "price": 49.78499984741211,
+      "valuation": 266616493.34769326
     },
     {
       "name": "VGLT",
@@ -219,8 +219,8 @@
       "category": "US Bonds",
       "currency": "USD",
       "qty": 3663.0,
-      "price": 55.11999893188477,
-      "valuation": 302000760.7851541
+      "price": 54.93500137329102,
+      "valuation": 301017353.8613963
     }
   ],
   "Jintae": [
@@ -231,8 +231,8 @@
       "category": "Crypto",
       "currency": "USD",
       "qty": 0.21670934,
-      "price": 71024.859375,
-      "valuation": 23015130.453745484
+      "price": 69999.0859375,
+      "valuation": 22680308.3218506
     },
     {
       "name": "Ethereum",
@@ -241,8 +241,8 @@
       "category": "Crypto",
       "currency": "USD",
       "qty": 2.63407606,
-      "price": 2159.72998046875,
-      "valuation": 8506544.870218327
+      "price": 2136.225341796875,
+      "valuation": 8413066.654634845
     },
     {
       "name": "KODEX KOFR금리액티브(합성)",
@@ -323,8 +323,8 @@
       "category": "Crypto",
       "currency": "USD",
       "qty": 0.18921629,
-      "price": 71024.859375,
-      "valuation": 20095292.608633008
+      "price": 69999.0859375,
+      "valuation": 19802948.025759745
     },
     {
       "name": "Ethereum",
@@ -333,8 +333,8 @@
       "category": "Crypto",
       "currency": "USD",
       "qty": 1.42834823,
-      "price": 2159.72998046875,
-      "valuation": 4612740.115329823
+      "price": 2136.225341796875,
+      "valuation": 4562050.825905043
     },
     {
       "name": "TIGER MSCI US 리츠(합성H)",
@@ -409,9 +409,9 @@
   ],
   "Total": [],
   "_prev_totals": {
-    "Susie": 579415723.2582223,
-    "Dirac & Broglie": 4090086640.827783,
-    "Jintae": 838467688.4989642,
-    "Hyunhee": 232866534.1716804
+    "Susie": 580101194.7730851,
+    "Dirac & Broglie": 4091832774.2121305,
+    "Jintae": 838582751.3239639,
+    "Hyunhee": 232956446.72396284
   }
 }
