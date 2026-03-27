@@ -174,13 +174,19 @@ function computeAllocation(holdings: Holding[]) {
     "Crypto":    "#f97316",
   };
 
+  const ORDER = ["Crypto", "Cash", "Gold", "Kor Stock", "US Stock", "US Bonds"];
+
   return Object.entries(groups)
     .map(([label, krw]) => ({
       label,
       pct: (krw / totalKRW) * 100,
       color: COLOR_MAP[label] ?? "#888",
     }))
-    .sort((a, b) => b.pct - a.pct);
+    .sort((a, b) => {
+      const ia = ORDER.indexOf(a.label);
+      const ib = ORDER.indexOf(b.label);
+      return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+    });
 }
 
 export default function SecuritiesPage() {
@@ -237,8 +243,11 @@ export default function SecuritiesPage() {
   return (
     <div className="max-w-5xl">
       {/* 핵심 지표 */}
-      <div className="grid grid-cols-2 gap-0 mb-0" style={{ borderBottom: "1px dashed #28282e" }}>
-        <div className="py-8 px-0 pr-8" style={{ borderRight: "1px dashed #28282e" }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-0 mb-0" style={{ borderBottom: "1px dashed #28282e" }}>
+        {/* 총 평가금액 — 모바일: 위, 데스크탑: 왼쪽 */}
+        <div className="py-6 sm:py-8 pr-0 sm:pr-8 border-b sm:border-b-0 sm:border-r"
+          style={{ borderColor: "#28282e", borderStyle: "dashed" }}
+        >
           <p className="text-xs uppercase tracking-widest mb-3" style={{ color: "#60606a" }}>총 평가금액</p>
           <p className="text-2xl sm:text-3xl lg:text-4xl font-bold" style={{ color: "#f0f0ee" }}>
             ₩{Math.round(totalKRW).toLocaleString()}
@@ -247,8 +256,9 @@ export default function SecuritiesPage() {
             약 {(totalKRW / 100000000).toFixed(1)}억원
           </p>
         </div>
-        <div className="py-8 px-8">
-          <div className="flex flex-wrap gap-x-5 gap-y-2 mt-1">
+        {/* 증감율 — 모바일: 아래(한 줄), 데스크탑: 오른쪽 */}
+        <div className="py-5 sm:py-8 sm:px-8">
+          <div className="flex flex-row sm:flex-wrap gap-x-5 sm:gap-x-5 gap-y-2">
             {performance ? (
               <>
                 {[
@@ -257,7 +267,7 @@ export default function SecuritiesPage() {
                   { label: "7D",  value: performance.changes.day_7 },
                   { label: "1D",  value: performance.changes.day_1 },
                 ].map((item) => (
-                  <div key={item.label} className="flex flex-col gap-1">
+                  <div key={item.label} className="flex flex-col gap-0.5 flex-1 sm:flex-none">
                     <span style={{ color: "#60606a", fontSize: 11 }}>{item.label}</span>
                     <span className="font-bold text-base sm:text-lg" style={{
                       color: item.value === null ? "#60606a" : item.value > 0 ? "#4ade80" : "#ef4444"
