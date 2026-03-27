@@ -2,6 +2,18 @@
 """
 watchlist.xlsx의 Summary 시트에서 성과 데이터를 추출하여
 data/performance.json으로 저장합니다.
+
+출력 형식:
+{
+  "date": "YYYY-MM-DD",
+  "members": {
+    "Total":   { "current": 숫자, "changes": { "day_1": %, "day_7": %, "day_30": %, "day_60": % } },
+    "D&B":     { ... },
+    "Susie":   { ... },
+    "Jintae":  { ... },
+    "Hyunhee": { ... }
+  }
+}
 """
 
 import json
@@ -9,10 +21,19 @@ import openpyxl
 from datetime import datetime, timedelta
 from pathlib import Path
 
-def generate_performance():
-    """watchlist.xlsx에서 성과 데이터 추출 및 JSON 생성"""
+# Summary 시트 컬럼 인덱스 → 멤버 키 매핑 (0-based)
+# A=0: Date, B=1: Total, C=2: Susie, D=3: D&B, E=4: Jintae, F=5: Hyunhee
+MEMBER_COLS = {
+    "Total":   1,
+    "Susie":   2,
+    "D&B":     3,
+    "Jintae":  4,
+    "Hyunhee": 5,
+}
 
-    # 파일 경로 설정
+def generate_performance():
+    """watchlist.xlsx에서 멤버별 성과 데이터 추출 및 JSON 생성"""
+
     xlsx_path = Path(__file__).parent.parent / "data" / "watchlist.xlsx"
     json_path = Path(__file__).parent.parent / "data" / "performance.json"
 
@@ -21,7 +42,6 @@ def generate_performance():
         return False
 
     try:
-        # watchlist.xlsx 읽기
         wb = openpyxl.load_workbook(str(xlsx_path), data_only=True)
         if "Summary" not in wb.sheetnames:
             print("Error: Summary sheet not found in watchlist.xlsx")
@@ -29,62 +49,73 @@ def generate_performance():
 
         ws = wb["Summary"]
 
-        # 날짜와 Total 데이터 추출 (row 4부터 시작)
-        data_by_date = {}
+        # 날짜별 멤버별 값 수집 (row 4부터)
+        series = {}
         for row in ws.iter_rows(min_row=4, values_only=True):
-            if row[0] and isinstance(row[0], datetime):
-                date = row[0].date()
-                total = row[1]
-                if isinstance(total, (int, float)):
-                    data_by_date[date] = total
+            date_val = row[0]
+            if not date_val or not isinstance(date_val, datetime):
+                continue
+            date = date_val.date()
+            entry = {}
+            for member, col_idx in MEMBER_COLS.items():
+                val = row[col_idx]
+                if isinstance(val, (int, float)):
+                    entry[member] = float(val)
+            if entry:
+                series[date] = entry
 
-        if not data_by_date:
+        if not series:
             print("Error: No data found in Summary sheet")
             return False
 
-        # 현재 데이터 (가장 최근 날짜)
-        today = max(data_by_date.keys())
-        current_total = data_by_date[today]
+        today = max(series.keys())
+        past_dates = sorted([d for d in series if d < today], reverse=True)
 
-        # 변화율 계산 함수
-        def calc_change(days_ago):
-            target_date = today - timedelta(days=days_ago)
+        def find_closest(days_ago):
+            target = today - timedelta(days=days_ago)
+            best = min(past_dates, key=lambda d: abs((d - target).days), default=None)
+            if best is None or abs((best - target).days) > 5:
+                return None
+            return best
 
-            # 정확한 날짜가 없으면 가장 가까운 날짜 찾기
-            if target_date not in data_by_date:
-                closest_date = min(
-                    data_by_date.keys(),
-                    key=lambda d: abs((d - target_date).days)
-                )
-                # 5일 이상 차이나면 None 반환
-                if abs((closest_date - target_date).days) > 5:
-                    return None
-                target_date = closest_date
+        def calc_change(member, days_ago):
+            current = series[today].get(member)
+            if current is None:
+                return None
+            past_date = find_closest(days_ago)
+            if past_date is None:
+                return None
+            past = series[past_date].get(member)
+            if past is None or past == 0:
+                return None
+            return round((current - past) / past * 100, 2)
 
-            prev_total = data_by_date[target_date]
-            change_pct = ((current_total - prev_total) / prev_total) * 100
-            return round(change_pct, 2)
-
-        # 성과 데이터 생성
-        performance = {
-            "date": today.isoformat(),
-            "current": int(current_total),
-            "changes": {
-                "day_1": calc_change(1),
-                "day_7": calc_change(7),
-                "day_30": calc_change(30),
-                "day_60": calc_change(60),
+        members_out = {}
+        for member in MEMBER_COLS:
+            current = series[today].get(member)
+            members_out[member] = {
+                "current": int(current) if current is not None else None,
+                "changes": {
+                    "day_1":  calc_change(member, 1),
+                    "day_7":  calc_change(member, 7),
+                    "day_30": calc_change(member, 30),
+                    "day_60": calc_change(member, 60),
+                },
             }
+
+        output = {
+            "date": today.isoformat(),
+            "members": members_out,
         }
 
-        # JSON 저장
-        with open(json_path, 'w', encoding='utf-8') as f:
-            json.dump(performance, f, indent=2, ensure_ascii=False)
+        with open(json_path, "w", encoding="utf-8") as f:
+            json.dump(output, f, indent=2, ensure_ascii=False)
 
         print(f"✅ Performance data saved to {json_path}")
-        print(f"   Date: {performance['date']}")
-        print(f"   Current: ₩{performance['current']:,}")
-        print(f"   Changes: {performance['changes']}")
+        print(f"   Date: {output['date']}")
+        for m, v in members_out.items():
+            c = v['current']
+            print(f"   {m:10s}: ₩{c:>15,}  {v['changes']}")
 
         return True
 
@@ -93,6 +124,7 @@ def generate_performance():
         import traceback
         traceback.print_exc()
         return False
+
 
 if __name__ == "__main__":
     success = generate_performance()

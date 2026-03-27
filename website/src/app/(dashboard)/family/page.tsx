@@ -126,14 +126,24 @@ interface Holding {
   };
 }
 
-interface PerformanceData {
-  date: string;
-  current: number;
+interface MemberPerf {
+  current: number | null;
   changes: {
     day_1: number | null;
     day_7: number | null;
     day_30: number | null;
     day_60: number | null;
+  };
+}
+
+interface PerformanceData {
+  date: string;
+  members: {
+    Total: MemberPerf;
+    "D&B": MemberPerf;
+    Susie: MemberPerf;
+    Jintae: MemberPerf;
+    Hyunhee: MemberPerf;
   };
 }
 
@@ -354,6 +364,7 @@ function MemberView({ member }: { member: Member }) {
   const [activeCategory, setActiveCategory] = useState("Total");
   const [holdings, setHoldings] = useState<Holding[]>([]);
   const [loading, setLoading] = useState(true);
+  const [performance, setPerformance] = useState<PerformanceData | null>(null);
 
   useEffect(() => {
     setLoading(true);
@@ -364,6 +375,16 @@ function MemberView({ member }: { member: Member }) {
       .then((data: Holding[]) => setHoldings(data))
       .finally(() => setLoading(false));
   }, [member]);
+
+  useEffect(() => {
+    fetch(
+      "https://raw.githubusercontent.com/jtkimpr/finance-watch/main/data/performance.json",
+      { cache: "no-store" }
+    )
+      .then((r) => r.json())
+      .then((data: PerformanceData) => setPerformance(data))
+      .catch(() => setPerformance(null));
+  }, []);
 
   if (loading) {
     return (
@@ -394,40 +415,22 @@ function MemberView({ member }: { member: Member }) {
           ₩{Math.round(totalKRW).toLocaleString()}
         </p>
         <div className="flex flex-row gap-x-5 gap-y-2 mt-3">
-          {(() => {
-            const allChanges = filtered.flatMap((h) =>
-              h.price_changes ? [h.price_changes.day_60, h.price_changes.day_30, h.price_changes.day_7, h.price_changes.day_1] : []
-            );
-            const hasAny = allChanges.some((v) => v !== null);
-            if (!hasAny) return <span style={{ color: "#60606a", fontSize: 13 }}>데이터 로딩 중...</span>;
-
-            const weightedChange = (key: "day_60" | "day_30" | "day_7" | "day_1") => {
-              let weightedSum = 0, totalWeight = 0;
-              for (const h of filtered) {
-                const val = h.price_changes?.[key];
-                if (val !== null && val !== undefined && h.valuation > 0) {
-                  weightedSum += val * h.valuation;
-                  totalWeight += h.valuation;
-                }
-              }
-              return totalWeight > 0 ? weightedSum / totalWeight : null;
-            };
-
-            return (
-              <>
-                {(["day_60", "day_30", "day_7", "day_1"] as const).map((key) => {
-                  const val = weightedChange(key);
-                  return (
-                    <span key={key} className="font-semibold text-sm" style={{
-                      color: val === null ? "#60606a" : val > 0 ? "#4ade80" : "#ef4444"
-                    }}>
-                      {val === null ? "—" : `${val > 0 ? "+" : ""}${val.toFixed(2)}%`}
-                    </span>
-                  );
-                })}
-              </>
-            );
-          })()}
+          {performance ? (
+            <>
+              {(["day_60", "day_30", "day_7", "day_1"] as const).map((key) => {
+                const val = performance.members[member]?.changes[key] ?? null;
+                return (
+                  <span key={key} className="font-semibold text-sm" style={{
+                    color: val === null ? "#60606a" : val > 0 ? "#4ade80" : "#ef4444"
+                  }}>
+                    {val === null ? "—" : `${val > 0 ? "+" : ""}${val.toFixed(2)}%`}
+                  </span>
+                );
+              })}
+            </>
+          ) : (
+            <span style={{ color: "#60606a", fontSize: 13 }}>데이터 로딩 중...</span>
+          )}
         </div>
       </div>
 
@@ -619,18 +622,16 @@ function DiracBroglieView() {
         <div className="flex flex-row gap-x-5 gap-y-2 mt-3">
           {performance ? (
             <>
-              {[
-                { label: "60D", value: performance.changes.day_60 },
-                { label: "30D", value: performance.changes.day_30 },
-                { label: "7D",  value: performance.changes.day_7 },
-                { label: "1D",  value: performance.changes.day_1 },
-              ].map((item) => (
-                <span key={item.label} className="font-semibold text-sm" style={{
-                  color: item.value === null ? "#60606a" : item.value > 0 ? "#4ade80" : "#ef4444"
-                }}>
-                  {item.value === null ? "—" : `${item.value > 0 ? "+" : ""}${item.value.toFixed(2)}%`}
-                </span>
-              ))}
+              {(["day_60", "day_30", "day_7", "day_1"] as const).map((key) => {
+                const val = performance.members["D&B"]?.changes[key] ?? null;
+                return (
+                  <span key={key} className="font-semibold text-sm" style={{
+                    color: val === null ? "#60606a" : val > 0 ? "#4ade80" : "#ef4444"
+                  }}>
+                    {val === null ? "—" : `${val > 0 ? "+" : ""}${val.toFixed(2)}%`}
+                  </span>
+                );
+              })}
             </>
           ) : (
             <span style={{ color: "#60606a", fontSize: 13 }}>데이터 로딩 중...</span>
