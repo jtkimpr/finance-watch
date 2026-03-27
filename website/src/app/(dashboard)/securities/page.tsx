@@ -292,12 +292,11 @@ export default function SecuritiesPage() {
             <div key={a.label} style={{ width: `${a.pct}%`, background: a.color }} title={`${a.label}: ${a.pct.toFixed(2)}%`} />
           ))}
         </div>
-        <div className="flex flex-wrap gap-x-8 gap-y-2">
+        <div className="flex flex-wrap gap-x-5 gap-y-2">
           {allocation.map((a) => (
-            <div key={a.label} className="flex items-center gap-2 text-sm">
+            <div key={a.label} className="flex items-center gap-1.5" title={a.label}>
               <span className="w-2.5 h-2.5 rounded-full inline-block shrink-0" style={{ background: a.color }} />
-              <span style={{ color: "#8a8a92" }}>{a.label}</span>
-              <span className="font-bold" style={{ color: "#f0f0ee" }}>{a.pct.toFixed(2)}%</span>
+              <span className="text-sm font-bold" style={{ color: "#f0f0ee" }}>{a.pct.toFixed(1)}%</span>
             </div>
           ))}
         </div>

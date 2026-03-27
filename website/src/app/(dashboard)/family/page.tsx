@@ -155,13 +155,18 @@ function computeAllocation(holdings: Holding[]) {
     "Crypto":    "#f97316",
   };
 
+  const ORDER = ["Crypto", "Cash", "Gold", "Kor Stock", "US Stock", "US Bonds"];
   return Object.entries(groups)
     .map(([label, krw]) => ({
       label,
       pct: (krw / totalKRW) * 100,
       color: COLOR_MAP[label] ?? "#888",
     }))
-    .sort((a, b) => b.pct - a.pct);
+    .sort((a, b) => {
+      const ia = ORDER.indexOf(a.label);
+      const ib = ORDER.indexOf(b.label);
+      return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+    });
 }
 
 const TOTAL_DISPLAY_MEMBERS = ["Total", "Dirac & Broglie", "Susie", "Jintae", "Hyunhee"] as const;
@@ -220,11 +225,12 @@ function TotalView() {
   return (
     <div className="max-w-5xl">
       {/* 총평가금액 카드 그리드 */}
-      <div className="grid grid-cols-2 gap-0 mb-0" style={{ borderBottom: "1px dashed #28282e" }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-0 mb-0" style={{ borderBottom: "1px dashed #28282e" }}>
         {/* Grand Total */}
-        <div className="py-8 px-0 pr-8" style={{ borderRight: "1px dashed #28282e" }}>
+        <div className="py-6 sm:py-8 pr-0 sm:pr-8 border-b sm:border-b-0 sm:border-r"
+          style={{ borderColor: "#28282e", borderStyle: "dashed" }}>
           <p className="text-xs uppercase tracking-widest mb-3" style={{ color: "#60606a" }}>전체 합계</p>
-          <p className="text-4xl font-bold" style={{ color: "#f0f0ee" }}>
+          <p className="text-2xl sm:text-3xl lg:text-4xl font-bold" style={{ color: "#f0f0ee" }}>
             ₩{Math.round(grandTotal).toLocaleString()}
           </p>
           <div className="flex items-center gap-3 mt-2">
@@ -240,7 +246,7 @@ function TotalView() {
         </div>
 
         {/* 개인별 카드 */}
-        <div className="py-8 px-8">
+        <div className="py-5 sm:py-8 sm:px-8">
           <p className="text-xs uppercase tracking-widest mb-3" style={{ color: "#60606a" }}>개인별 현황</p>
           <div className="flex flex-col gap-2">
             {(["Dirac & Broglie", "Susie", "Jintae", "Hyunhee"] as const).map((m) => {
@@ -365,23 +371,22 @@ function MemberView({ member }: { member: Member }) {
   return (
     <div className="max-w-5xl">
       {/* 핵심 지표 */}
-      <div className="grid grid-cols-2 gap-0 mb-0" style={{ borderBottom: "1px dashed #28282e" }}>
-        <div className="py-8 px-0 pr-8" style={{ borderRight: "1px dashed #28282e" }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-0 mb-0" style={{ borderBottom: "1px dashed #28282e" }}>
+        <div className="py-6 sm:py-8 pr-0 sm:pr-8 border-b sm:border-b-0 sm:border-r"
+          style={{ borderColor: "#28282e", borderStyle: "dashed" }}>
           <p className="text-xs uppercase tracking-widest mb-3" style={{ color: "#60606a" }}>총 평가금액</p>
-          <p className="text-4xl font-bold" style={{ color: "#f0f0ee" }}>
+          <p className="text-2xl sm:text-3xl lg:text-4xl font-bold" style={{ color: "#f0f0ee" }}>
             ₩{Math.round(totalKRW).toLocaleString()}
           </p>
           <p className="text-sm mt-2" style={{ color: "#60606a" }}>
             약 {(totalKRW / 100000000).toFixed(1)}억원
           </p>
         </div>
-        <div className="py-8 px-8">
-          <p className="text-xs uppercase tracking-widest mb-3" style={{ color: "#60606a" }}>자산 배분</p>
-          <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1">
-            {allocation.slice(0, 3).map((a) => (
-              <div key={a.label} className="flex items-center gap-1.5 text-sm">
+        <div className="py-5 sm:py-8 sm:px-8">
+          <div className="flex flex-wrap gap-x-4 gap-y-1">
+            {allocation.slice(0, 4).map((a) => (
+              <div key={a.label} className="flex items-center gap-1.5 text-sm" title={a.label}>
                 <span className="w-2 h-2 rounded-full inline-block shrink-0" style={{ background: a.color }} />
-                <span style={{ color: "#8a8a92" }}>{a.label}</span>
                 <span className="font-bold" style={{ color: "#f0f0ee" }}>{a.pct.toFixed(1)}%</span>
               </div>
             ))}
@@ -397,12 +402,11 @@ function MemberView({ member }: { member: Member }) {
             <div key={a.label} style={{ width: `${a.pct}%`, background: a.color }} title={`${a.label}: ${a.pct.toFixed(2)}%`} />
           ))}
         </div>
-        <div className="flex flex-wrap gap-x-8 gap-y-2">
+        <div className="flex flex-wrap gap-x-5 gap-y-2">
           {allocation.map((a) => (
-            <div key={a.label} className="flex items-center gap-2 text-sm">
+            <div key={a.label} className="flex items-center gap-1.5" title={a.label}>
               <span className="w-2.5 h-2.5 rounded-full inline-block shrink-0" style={{ background: a.color }} />
-              <span style={{ color: "#8a8a92" }}>{a.label}</span>
-              <span className="font-bold" style={{ color: "#f0f0ee" }}>{a.pct.toFixed(2)}%</span>
+              <span className="text-sm font-bold" style={{ color: "#f0f0ee" }}>{a.pct.toFixed(1)}%</span>
             </div>
           ))}
         </div>
@@ -410,72 +414,84 @@ function MemberView({ member }: { member: Member }) {
 
       {/* 카테고리 필터 */}
       <div className="flex flex-wrap gap-2 py-6">
-        {usedCategories.map((cat) => (
-          <button key={cat} onClick={() => setActiveCategory(cat)}
-            className="px-4 py-1.5 rounded-full text-sm transition-colors"
-            style={{
-              background: activeCategory === cat ? "#d4a853" : "#1a1a1e",
-              color: activeCategory === cat ? "#0c0c0e" : "#8a8a92",
-              border: "1px solid",
-              borderColor: activeCategory === cat ? "#d4a853" : "#28282e",
-              fontWeight: activeCategory === cat ? 600 : 400,
-            }}>
-            {cat}
-          </button>
-        ))}
+        {usedCategories.map((cat) => {
+          const isActive = activeCategory === cat;
+          const catColor = cat === "Total" ? "#d4a853" : (CATEGORY_COLOR[cat] ?? "#d4a853");
+          return (
+            <button key={cat} onClick={() => setActiveCategory(cat)}
+              className="px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm transition-all"
+              style={{
+                background: isActive ? `${catColor}22` : "#1a1a1e",
+                color: isActive ? catColor : `${catColor}99`,
+                border: "1px solid",
+                borderColor: isActive ? catColor : `${catColor}44`,
+                fontWeight: isActive ? 600 : 400,
+              }}>
+              {cat}
+            </button>
+          );
+        })}
       </div>
 
       {/* 테이블 */}
       <div className="overflow-x-auto" style={{ border: "1px solid #28282e", borderRadius: 8 }}>
-        <table className="w-full text-sm">
+        <table className="w-full text-sm" style={{ tableLayout: "fixed" }}>
           <thead>
             <tr style={{ background: "#141416", borderBottom: "1px solid #28282e" }}>
-              {["종목명", "구분", "보유수량", "현재가", "평가금액 (KRW)"].map((col) => (
-                <th key={col} className="px-4 py-3 text-left font-medium whitespace-nowrap"
-                  style={{ color: "#60606a", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                  {col}
-                </th>
-              ))}
+              <th className="px-2 sm:px-3 py-3 text-left font-medium"
+                style={{ color: "#60606a", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em", width: "30%" }}>
+                종목명
+              </th>
+              <th className="px-2 sm:px-3 py-3 text-right font-medium"
+                style={{ color: "#60606a", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em", width: "28%" }}>
+                평가금액
+              </th>
+              <th className="px-2 sm:px-3 py-3 text-right font-medium"
+                style={{ color: "#60606a", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                현재가
+              </th>
             </tr>
           </thead>
           <tbody>
-            {filtered.map((h, i) => (
-              <tr key={`${h.ticker}-${i}`}
-                style={{ borderBottom: "1px solid #1e1e24", background: i % 2 === 0 ? "#0c0c0e" : "#111113" }}>
-                <td className="px-4 py-3 font-medium whitespace-nowrap" style={{ color: "#f0f0ee" }}>
-                  {h.name}
-                  {h.exchange !== "—" && (
-                    <span className="ml-2 text-xs" style={{ color: "#60606a" }}>{h.ticker} · {h.exchange}</span>
-                  )}
-                </td>
-                <td className="px-4 py-3">
-                  <span className="px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap"
-                    style={{ color: CATEGORY_COLOR[h.category] ?? "#888", background: `${CATEGORY_COLOR[h.category] ?? "#888"}18` }}>
-                    {h.category}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-right whitespace-nowrap" style={{ color: h.qty === 0 ? "#60606a" : "#a0a0a8" }}>
-                  {h.ticker === "KRW" || h.ticker === "USD"
-                    ? `${h.currency} ${h.qty.toLocaleString()}`
-                    : h.qty > 0 ? `${h.qty.toLocaleString()}주` : "미보유"}
-                </td>
-                <td className="px-4 py-3 text-right whitespace-nowrap" style={{ color: "#a0a0a8" }}>
-                  {h.ticker === "KRW" ? "₩1" : h.ticker === "USD" ? "$1.00" : formatPrice(h.price, h.currency)}
-                </td>
-                <td className="px-4 py-3 text-right font-medium whitespace-nowrap"
-                  style={{ color: h.valuation === 0 ? "#60606a" : "#f0f0ee" }}>
-                  {h.valuation === 0 ? "—" : `₩${Math.round(h.valuation).toLocaleString()}`}
-                </td>
-              </tr>
-            ))}
+            {filtered.map((h, i) => {
+              const catColor = CATEGORY_COLOR[h.category] ?? "#f0f0ee";
+              return (
+                <tr key={`${h.ticker}-${i}`}
+                  style={{
+                    borderBottom: "1px solid #1e1e24",
+                    background: i % 2 === 0 ? "#0c0c0e" : "#111113",
+                    transition: "background-color 0.15s",
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#1a1a1f"}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = i % 2 === 0 ? "#0c0c0e" : "#111113"}
+                >
+                  <td className="px-2 sm:px-3 py-3 font-medium">
+                    <div className="truncate" style={{ color: catColor }}>{h.name}</div>
+                    {h.exchange !== "—" && (
+                      <div className="truncate text-xs" style={{ color: "#60606a" }}>{h.ticker}</div>
+                    )}
+                  </td>
+                  <td className="px-2 sm:px-3 py-3 text-right font-medium"
+                    style={{ color: h.valuation === 0 ? "#60606a" : "#f0f0ee", fontSize: "0.8rem" }}>
+                    {h.valuation === 0 ? "—" : `₩${Math.round(h.valuation).toLocaleString()}`}
+                  </td>
+                  <td className="px-2 sm:px-3 py-3 text-right"
+                    style={{ fontSize: "0.8rem" }}>
+                    <div className="font-medium" style={{ color: "#f0f0ee" }}>
+                      {h.ticker === "KRW" ? "₩1" : h.ticker === "USD" ? "$1.00" : formatPrice(h.price, h.currency)}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
           <tfoot>
             <tr style={{ background: "#1a1a1e", borderTop: "1px solid #28282e" }}>
-              <td className="px-4 py-3 font-semibold" style={{ color: "#d4a853" }}>합계</td>
-              <td colSpan={3}></td>
-              <td className="px-4 py-3 text-right font-bold" style={{ color: "#d4a853" }}>
+              <td className="px-2 sm:px-3 py-3 font-semibold" style={{ color: "#d4a853" }}>합계</td>
+              <td className="px-2 sm:px-3 py-3 text-right font-bold" style={{ color: "#d4a853", fontSize: "0.8rem" }}>
                 ₩{Math.round(filteredKRW).toLocaleString()}
               </td>
+              <td></td>
             </tr>
           </tfoot>
         </table>
