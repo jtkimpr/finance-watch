@@ -242,3 +242,4 @@ watchlist.xlsx (Admin 시트)
 | 2026-03-23 | Family 페이지 Total 탭 추가 (전체/개인별 합계, 카테고리 비중 비교) |
 | 2026-03-23 | `generate_portfolio_json.py`에 `_prev_totals` 저장 로직 추가 (전일 비교용) |
 | 2026-03-23 | `vercel.json` ignoreCommand 버그 수정 (`!` 누락으로 배포 누락 되던 문제) |
+
