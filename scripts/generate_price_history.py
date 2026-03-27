@@ -85,100 +85,55 @@ def generate_price_history():
             print(f"⚠️  Price 시트에서 매핑 실패한 컬럼: {unmatched}")
         print(f"✅ 매핑된 종목 수: {len(ticker_to_col)} / {len(holdings)}")
 
-        # Price 시트에서 과거 가격 추출 (row 2부터, 최대 100행)
-        # row 2 = 오늘, row 3 = 1일전, row 4 = 2일전, ...
-        price_rows = list(price_ws.iter_rows(min_row=2, max_row=102, values_only=True))
+        # Price 시트에서 날짜별 가격 추출 (최대 200행)
+        # {ticker: [(date, price), ...]} 형태로 수집 후 날짜 기반으로 변동률 계산
+        price_rows = list(price_ws.iter_rows(min_row=2, max_row=202, values_only=True))
 
-        for day_offset, price_row in enumerate(price_rows[:100]):
-            # 첫 번째 컬럼은 날짜
+        ticker_price_series = {ticker: [] for ticker in ticker_to_col}
+
+        for price_row in price_rows:
             date_val = price_row[0]
             if not date_val:
-                break
+                continue
 
             # 날짜 파싱
             if isinstance(date_val, datetime):
                 price_date = date_val.date()
-            else:
+            elif isinstance(date_val, str):
                 try:
-                    price_date = datetime.strptime(str(date_val), "%m/%d/%Y").date()
+                    price_date = datetime.strptime(date_val, "%m/%d/%Y").date()
                 except:
                     continue
+            else:
+                continue
 
-            # 각 종목의 가격 저장
             for ticker, col_idx in ticker_to_col.items():
                 price = price_row[col_idx]
                 if price and isinstance(price, (int, float)):
-                    if day_offset == 0:
-                        day_label = "current"
-                    elif day_offset == 1:
-                        day_label = "day_1"
-                    elif day_offset == 7:
-                        day_label = "day_7"
-                    elif day_offset == 30:
-                        day_label = "day_30"
-                    elif day_offset == 60:
-                        day_label = "day_60"
-                    else:
-                        continue
+                    ticker_price_series[ticker].append((price_date, float(price)))
 
-                    holdings[ticker]["prices"][day_label] = float(price)
+        # 날짜 기반으로 current / day_1 / day_7 / day_30 / day_60 찾기
+        # series는 최신 날짜순으로 정렬
+        for ticker, series in ticker_price_series.items():
+            if not series:
+                continue
 
-        # 과거 데이터가 없으면 이전 행에서 찾기
-        for ticker in holdings:
-            prices = holdings[ticker]["prices"]
+            series.sort(key=lambda x: x[0], reverse=True)  # 최신순 정렬
+            current_date, current_price = series[0]
+            holdings[ticker]["prices"]["current"] = current_price
 
-            # day_1 데이터가 없으면 다음 행들 찾기
-            if "day_1" not in prices:
-                for day_offset in range(1, min(10, len(price_rows))):
-                    price_row = price_rows[day_offset]
-                    if ticker in ticker_to_col:
-                        col_idx = ticker_to_col[ticker]
-                        price = price_row[col_idx]
-                        if price and isinstance(price, (int, float)):
-                            prices["day_1"] = float(price)
-                            break
-
-            # day_7 데이터가 없으면 찾기
-            if "day_7" not in prices:
-                for day_offset in range(5, min(15, len(price_rows))):
-                    price_row = price_rows[day_offset]
-                    if ticker in ticker_to_col:
-                        col_idx = ticker_to_col[ticker]
-                        price = price_row[col_idx]
-                        if price and isinstance(price, (int, float)):
-                            prices["day_7"] = float(price)
-                            break
-
-            # day_30 데이터가 없으면 찾기
-            if "day_30" not in prices:
-                for day_offset in range(25, min(40, len(price_rows))):
-                    price_row = price_rows[day_offset]
-                    if ticker in ticker_to_col:
-                        col_idx = ticker_to_col[ticker]
-                        price = price_row[col_idx]
-                        if price and isinstance(price, (int, float)):
-                            prices["day_30"] = float(price)
-                            break
-
-            # day_60 데이터가 없으면 찾기
-            if "day_60" not in prices:
-                for day_offset in range(55, min(100, len(price_rows))):
-                    price_row = price_rows[day_offset]
-                    if ticker in ticker_to_col:
-                        col_idx = ticker_to_col[ticker]
-                        price = price_row[col_idx]
-                        if price and isinstance(price, (int, float)):
-                            prices["day_60"] = float(price)
-                            break
-
-        # current 가격이 없으면 가장 최근 유효한 행에서 폴백
-        for ticker, col_idx in ticker_to_col.items():
-            if "current" not in holdings[ticker]["prices"]:
-                for price_row in price_rows[:10]:
-                    price = price_row[col_idx]
-                    if price and isinstance(price, (int, float)):
-                        holdings[ticker]["prices"]["current"] = float(price)
-                        break
+            # 각 기간에 가장 가까운 과거 가격 찾기 (허용 범위: ±3 영업일)
+            for label, target_days in [("day_1", 1), ("day_7", 7), ("day_30", 30), ("day_60", 60)]:
+                target_date = current_date - timedelta(days=target_days)
+                best = None
+                best_diff = timedelta(days=5)  # 허용 오차 최대 5일
+                for d, p in series[1:]:
+                    diff = abs(d - target_date)
+                    if diff < best_diff:
+                        best_diff = diff
+                        best = p
+                if best is not None:
+                    holdings[ticker]["prices"][label] = best
 
         # 증감률 계산
         for ticker in holdings:
