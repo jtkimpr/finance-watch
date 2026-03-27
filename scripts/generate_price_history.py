@@ -34,6 +34,7 @@ def generate_price_history():
 
         # Info 시트에서 종목명, 티커, 카테고리 추출 (row 2부터)
         holdings = {}
+        name_to_ticker = {}  # Price 시트 컬럼명 → ticker 매핑용
         for row_idx, row in enumerate(info_ws.iter_rows(min_row=2, values_only=True), start=2):
             if not row[0]:  # 종목명이 없으면 종료
                 break
@@ -47,13 +48,42 @@ def generate_price_history():
                 "category": category,
                 "prices": {}
             }
+            # Name → ticker 역매핑 (Price 시트 헤더가 ticker와 다를 때 사용)
+            name_to_ticker[name] = ticker
 
         # Price 시트 헤더 추출 (어느 컬럼이 어느 종목인지 파악)
+        # 우선순위: ① 헤더가 ticker와 직접 일치 → ② 헤더가 Info.Name과 일치 → ③ 수동 폴백 매핑
+        MANUAL_HEADER_TO_TICKER = {
+            "Strategy Prf":   "STRK",
+            "Strategy Prf A": "STRC",
+            "Strategy Prf D": "STRD",
+            "Strategy Prf F": "STRF",
+            "USDT_KRW Upbit": "USDT_KRW",
+            "UB Care":        "032620",
+            "Strategy":       "MSTR",
+        }
+
         header_row = list(price_ws.iter_rows(min_row=1, max_row=1, values_only=True))[0]
         ticker_to_col = {}
+        unmatched = []
         for col_idx, cell in enumerate(header_row):
+            if not cell or cell == "Date":
+                continue
             if cell in holdings:
+                # ① 직접 ticker 일치
                 ticker_to_col[cell] = col_idx
+            elif cell in name_to_ticker:
+                # ② Info.Name → ticker 매핑
+                ticker_to_col[name_to_ticker[cell]] = col_idx
+            elif cell in MANUAL_HEADER_TO_TICKER:
+                # ③ 수동 폴백 매핑
+                ticker_to_col[MANUAL_HEADER_TO_TICKER[cell]] = col_idx
+            else:
+                unmatched.append(cell)
+
+        if unmatched:
+            print(f"⚠️  Price 시트에서 매핑 실패한 컬럼: {unmatched}")
+        print(f"✅ 매핑된 종목 수: {len(ticker_to_col)} / {len(holdings)}")
 
         # Price 시트에서 과거 가격 추출 (row 2부터, 최대 100행)
         # row 2 = 오늘, row 3 = 1일전, row 4 = 2일전, ...
@@ -140,6 +170,15 @@ def generate_price_history():
                         if price and isinstance(price, (int, float)):
                             prices["day_60"] = float(price)
                             break
+
+        # current 가격이 없으면 가장 최근 유효한 행에서 폴백
+        for ticker, col_idx in ticker_to_col.items():
+            if "current" not in holdings[ticker]["prices"]:
+                for price_row in price_rows[:10]:
+                    price = price_row[col_idx]
+                    if price and isinstance(price, (int, float)):
+                        holdings[ticker]["prices"]["current"] = float(price)
+                        break
 
         # 증감률 계산
         for ticker in holdings:
