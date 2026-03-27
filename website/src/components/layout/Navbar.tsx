@@ -217,67 +217,71 @@ export default function Navbar() {
   return (
     <>
       <header
-        className="w-full flex items-center px-8"
-        style={{ background: "#FA660F", height: 48, flexShrink: 0, position: "sticky", top: 0, zIndex: 50 }}
+        className="w-full px-4 sm:px-8"
+        style={{ background: "#FA660F", flexShrink: 0, position: "sticky", top: 0, zIndex: 50 }}
       >
-        {/* 로고 */}
-        <Link
-          href="/about"
-          style={{
-            fontFamily: "var(--font-inter), Arial, sans-serif",
-            fontWeight: 900,
-            fontSize: 26,
-            color: "#1a0800",
-            letterSpacing: "-0.03em",
-            lineHeight: 1,
-            textDecoration: "none",
-            flexShrink: 0,
-          }}
-        >
-          Dirac &amp; Broglie
-        </Link>
-
-        {/* 중앙 슬롯 — STRC 페이지에서 포털로 주입 */}
-        <div id="navbar-center" className="flex-1 flex justify-center items-center" />
-
-        {/* 메뉴 */}
-        <nav className="flex items-center gap-2" style={{ flexShrink: 0 }}>
-          {navItems.map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                style={{
-                  fontFamily: "var(--font-inter), Arial, sans-serif",
-                  fontSize: 14,
-                  fontWeight: isActive ? 700 : 500,
-                  color: "#000000",
-                  letterSpacing: "normal",
-                  textDecoration: "none",
-                  padding: "6px 14px",
-                  borderRadius: 4,
-                  background: isActive ? "rgba(0,0,0,0.13)" : "transparent",
-                }}
-              >
-                {item.label}
-              </Link>
-            );
-          })}
-
-          {/* 관리자 아이콘 */}
-          <button
-            onClick={() => setShowAdmin(true)}
-            className="ml-2 flex items-center justify-center"
-            style={{ color: "#000000", width: 32, height: 32, background: "none", border: "none", cursor: "pointer" }}
-            title="Admin"
+        <div className="flex flex-wrap items-center">
+          {/* 로고 */}
+          <Link
+            href="/about"
+            className="h-12 flex items-center"
+            style={{
+              fontFamily: "var(--font-inter), Arial, sans-serif",
+              fontWeight: 900,
+              fontSize: "clamp(18px, 5vw, 26px)",
+              color: "#1a0800",
+              letterSpacing: "-0.03em",
+              lineHeight: 1,
+              textDecoration: "none",
+              flexShrink: 0,
+            }}
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-              <circle cx="12" cy="7" r="4"/>
-            </svg>
-          </button>
-        </nav>
+            Dirac &amp; Broglie
+          </Link>
+
+          {/* 중앙 슬롯 — STRC 페이지에서 포털로 주입 (데스크탑만) */}
+          <div id="navbar-center" className="hidden sm:flex flex-1 justify-center items-center h-12" />
+
+          {/* 메뉴 — 모바일: 로고 아래 줄; 데스크탑: 우측 inline */}
+          <nav className="flex items-center gap-0.5 sm:gap-1.5 w-full sm:w-auto sm:ml-auto pb-2 sm:pb-0 h-9 sm:h-12 flex-shrink-0">
+            {navItems.map((item) => {
+              const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  style={{
+                    fontFamily: "var(--font-inter), Arial, sans-serif",
+                    fontSize: 13,
+                    fontWeight: isActive ? 700 : 500,
+                    color: "#000000",
+                    letterSpacing: "normal",
+                    textDecoration: "none",
+                    padding: "5px 10px",
+                    borderRadius: 4,
+                    background: isActive ? "rgba(0,0,0,0.13)" : "transparent",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+
+            {/* 관리자 아이콘 */}
+            <button
+              onClick={() => setShowAdmin(true)}
+              className="ml-1 flex items-center justify-center"
+              style={{ color: "#000000", width: 30, height: 30, background: "none", border: "none", cursor: "pointer" }}
+              title="Admin"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </button>
+          </nav>
+        </div>
       </header>
 
       {showAdmin && <AdminModal onClose={() => setShowAdmin(false)} />}

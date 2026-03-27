@@ -240,7 +240,7 @@ export default function SecuritiesPage() {
       <div className="grid grid-cols-2 gap-0 mb-0" style={{ borderBottom: "1px dashed #28282e" }}>
         <div className="py-8 px-0 pr-8" style={{ borderRight: "1px dashed #28282e" }}>
           <p className="text-xs uppercase tracking-widest mb-3" style={{ color: "#60606a" }}>총 평가금액</p>
-          <p className="text-4xl font-bold" style={{ color: "#f0f0ee" }}>
+          <p className="text-2xl sm:text-3xl lg:text-4xl font-bold" style={{ color: "#f0f0ee" }}>
             ₩{Math.round(totalKRW).toLocaleString()}
           </p>
           <p className="text-sm mt-2" style={{ color: "#60606a" }}>
@@ -248,19 +248,18 @@ export default function SecuritiesPage() {
           </p>
         </div>
         <div className="py-8 px-8">
-          <p className="text-xs uppercase tracking-widest mb-3" style={{ color: "#60606a" }}>성과 (총 평가금액 증감률)</p>
-          <div className="flex flex-wrap gap-x-6 gap-y-2 mt-1">
+          <div className="flex flex-wrap gap-x-5 gap-y-2 mt-1">
             {performance ? (
               <>
                 {[
-                  { label: "60일전", value: performance.changes.day_60 },
-                  { label: "30일전", value: performance.changes.day_30 },
-                  { label: "7일전", value: performance.changes.day_7 },
-                  { label: "1일전", value: performance.changes.day_1 },
+                  { label: "60D", value: performance.changes.day_60 },
+                  { label: "30D", value: performance.changes.day_30 },
+                  { label: "7D",  value: performance.changes.day_7 },
+                  { label: "1D",  value: performance.changes.day_1 },
                 ].map((item) => (
                   <div key={item.label} className="flex flex-col gap-1">
-                    <span style={{ color: "#60606a", fontSize: 12 }}>{item.label}</span>
-                    <span className="font-bold text-lg" style={{
+                    <span style={{ color: "#60606a", fontSize: 11 }}>{item.label}</span>
+                    <span className="font-bold text-base sm:text-lg" style={{
                       color: item.value === null ? "#60606a" : item.value > 0 ? "#4ade80" : "#ef4444"
                     }}>
                       {item.value === null ? "—" : `${item.value > 0 ? "+" : ""}${item.value.toFixed(2)}%`}
@@ -301,7 +300,7 @@ export default function SecuritiesPage() {
           const catColor = cat === "Total" ? "#d4a853" : (CATEGORY_COLOR[cat] ?? "#d4a853");
           return (
             <button key={cat} onClick={() => setActiveCategory(cat)}
-              className="px-4 py-1.5 rounded-full text-sm transition-all"
+              className="px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm transition-all"
               style={{
                 background: isActive ? `${catColor}22` : "#1a1a1e",
                 color: isActive ? catColor : `${catColor}99`,
@@ -317,24 +316,28 @@ export default function SecuritiesPage() {
 
       {/* 테이블 */}
       <div className="overflow-x-auto" style={{ border: "1px solid #28282e", borderRadius: 8 }}>
-        <table className="w-full text-sm">
+        <table className="w-full text-sm" style={{ tableLayout: "fixed" }}>
           <thead>
             <tr style={{ background: "#141416", borderBottom: "1px solid #28282e" }}>
-              <th className="px-3 py-3 text-left font-medium whitespace-nowrap"
-                style={{ color: "#60606a", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              {/* 종목명: 모바일 30%, 데스크탑 25% */}
+              <th className="px-2 sm:px-3 py-3 text-left font-medium"
+                style={{ color: "#60606a", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em", width: "30%" }}>
                 종목명
               </th>
-              <th className="hidden sm:table-cell px-3 py-3 text-right font-medium whitespace-nowrap"
-                style={{ color: "#60606a", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                평가금액 (KRW)
+              {/* 평가금액: 항상 표시 */}
+              <th className="px-2 sm:px-3 py-3 text-right font-medium"
+                style={{ color: "#60606a", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em", width: "28%" }}>
+                평가금액
               </th>
-              <th className="px-3 py-3 text-right font-medium whitespace-nowrap"
+              {/* 현재가: 나머지 공간 */}
+              <th className="px-2 sm:px-3 py-3 text-right font-medium"
                 style={{ color: "#60606a", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em" }}>
                 현재가
               </th>
+              {/* 증감율: lg 이상에서만 별도 컬럼 */}
               <th className="hidden lg:table-cell px-3 py-3 text-right font-medium whitespace-nowrap"
-                style={{ color: "#60606a", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                증감율 (60d · 30d · 7d · 1d)
+                style={{ color: "#60606a", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em", width: "34%" }}>
+                60D · 30D · 7D · 1D
               </th>
             </tr>
           </thead>
@@ -357,34 +360,27 @@ export default function SecuritiesPage() {
                   onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#1a1a1f"}
                   onMouseLeave={(e) => e.currentTarget.style.backgroundColor = i % 2 === 0 ? "#0c0c0e" : "#111113"}
                 >
-                  {/* 종목명 — 카테고리 색으로 표시 */}
-                  <td className="px-3 py-3 font-medium">
-                    <div className="whitespace-nowrap" style={{ color: catColor }}>{h.name}</div>
+                  {/* 종목명 — 카테고리 색, 넘치면 말줄임 */}
+                  <td className="px-2 sm:px-3 py-3 font-medium">
+                    <div className="truncate" style={{ color: catColor }}>{h.name}</div>
                     {h.exchange !== "—" && (
-                      <span className="text-xs" style={{ color: "#60606a" }}>{h.ticker} · {h.exchange}</span>
+                      <div className="truncate text-xs" style={{ color: "#60606a" }}>{h.ticker}</div>
                     )}
                   </td>
 
-                  {/* 평가금액 — sm 이상에서 별도 컬럼, 모바일에서는 숨김 */}
-                  <td className="hidden sm:table-cell px-3 py-3 text-right font-medium whitespace-nowrap"
-                    style={{ color: h.valuation === 0 ? "#60606a" : "#f0f0ee" }}>
+                  {/* 평가금액 — 항상 별도 컬럼 */}
+                  <td className="px-2 sm:px-3 py-3 text-right font-medium"
+                    style={{ color: h.valuation === 0 ? "#60606a" : "#f0f0ee", fontSize: "0.8rem" }}>
                     {h.valuation === 0 ? "—" : `₩${Math.round(h.valuation).toLocaleString()}`}
                   </td>
 
-                  {/* 현재가 — 항상 표시. 화면 크기에 따라 하위 정보를 함께 표시 */}
-                  <td className="px-3 py-3 text-right">
-                    {/* 모바일 전용: 평가금액 (3줄 중 1번째) */}
-                    <div className="sm:hidden text-xs font-medium mb-1"
-                      style={{ color: h.valuation === 0 ? "#60606a" : "#a0a0a8" }}>
-                      {h.valuation === 0 ? "—" : `₩${Math.round(h.valuation).toLocaleString()}`}
-                    </div>
-                    {/* 현재가 */}
-                    <div className="font-medium whitespace-nowrap" style={{ color: "#f0f0ee" }}>
+                  {/* 현재가 + 증감율 (lg 미만에서 2줄로) */}
+                  <td className="px-2 sm:px-3 py-3 text-right">
+                    <div className="font-medium" style={{ color: "#f0f0ee", fontSize: "0.8rem" }}>
                       {h.ticker === "KRW" ? "₩1" : h.ticker === "USD" ? "$1.00" : formatPrice(h.price, h.currency)}
                     </div>
-                    {/* sm~lg 사이(태블릿/중간 화면): 현재가 아래에 증감율 표시 */}
                     {CHANGES.length > 0 && (
-                      <div className="lg:hidden flex justify-end flex-wrap gap-x-2 gap-y-0 text-xs mt-1">
+                      <div className="lg:hidden flex justify-end flex-wrap gap-x-1.5 gap-y-0 mt-1" style={{ fontSize: "0.7rem" }}>
                         {CHANGES.map((item) => (
                           <span key={item.label} style={{
                             color: item.value === null ? "#60606a" : item.value > 0 ? "#4ade80" : "#ef4444"
@@ -396,7 +392,7 @@ export default function SecuritiesPage() {
                     )}
                   </td>
 
-                  {/* 증감율 — lg 이상에서 별도 컬럼 */}
+                  {/* 증감율 — lg 이상 전용 컬럼 */}
                   <td className="hidden lg:table-cell px-3 py-3 text-right">
                     {CHANGES.length > 0 && (
                       <div className="flex justify-end gap-3 text-xs">
@@ -416,13 +412,11 @@ export default function SecuritiesPage() {
           </tbody>
           <tfoot>
             <tr style={{ background: "#1a1a1e", borderTop: "1px solid #28282e" }}>
-              <td className="px-3 py-3 font-semibold" style={{ color: "#d4a853" }}>합계</td>
-              <td className="hidden sm:table-cell px-3 py-3 text-right font-bold" style={{ color: "#d4a853" }}>
+              <td className="px-2 sm:px-3 py-3 font-semibold" style={{ color: "#d4a853" }}>합계</td>
+              <td className="px-2 sm:px-3 py-3 text-right font-bold" style={{ color: "#d4a853", fontSize: "0.8rem" }}>
                 ₩{Math.round(filteredKRW).toLocaleString()}
               </td>
-              <td className="sm:hidden px-3 py-3 text-right font-bold" style={{ color: "#d4a853" }}>
-                ₩{Math.round(filteredKRW).toLocaleString()}
-              </td>
+              <td></td>
               <td className="hidden lg:table-cell"></td>
             </tr>
           </tfoot>
