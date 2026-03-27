@@ -388,26 +388,46 @@ function MemberView({ member }: { member: Member }) {
   return (
     <div className="max-w-5xl">
       {/* 핵심 지표 */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-0 mb-0" style={{ borderBottom: "1px dashed #28282e" }}>
-        <div className="py-6 sm:py-8 pr-0 sm:pr-8 border-b sm:border-b-0 sm:border-r"
-          style={{ borderColor: "#28282e", borderStyle: "dashed" }}>
-          <p className="text-xs uppercase tracking-widest mb-3" style={{ color: "#60606a" }}>총 평가금액</p>
-          <p className="text-2xl sm:text-3xl lg:text-4xl font-bold" style={{ color: "#f0f0ee" }}>
-            ₩{Math.round(totalKRW).toLocaleString()}
-          </p>
-          <p className="text-sm mt-2" style={{ color: "#60606a" }}>
-            약 {(totalKRW / 100000000).toFixed(1)}억원
-          </p>
-        </div>
-        <div className="py-5 sm:py-8 sm:px-8">
-          <div className="flex flex-wrap gap-x-4 gap-y-1">
-            {allocation.slice(0, 4).map((a) => (
-              <div key={a.label} className="flex items-center gap-1.5 text-sm" title={a.label}>
-                <span className="w-2 h-2 rounded-full inline-block shrink-0" style={{ background: a.color }} />
-                <span className="font-bold" style={{ color: "#f0f0ee" }}>{a.pct.toFixed(1)}%</span>
-              </div>
-            ))}
-          </div>
+      <div className="py-6 sm:py-8" style={{ borderBottom: "1px dashed #28282e" }}>
+        <p className="text-xs uppercase tracking-widest mb-3" style={{ color: "#60606a" }}>총 평가금액(60D-30D-7D-1D)</p>
+        <p className="text-2xl sm:text-3xl lg:text-4xl font-bold" style={{ color: "#f0f0ee" }}>
+          ₩{Math.round(totalKRW).toLocaleString()}
+        </p>
+        <div className="flex flex-row gap-x-5 gap-y-2 mt-3">
+          {(() => {
+            const allChanges = filtered.flatMap((h) =>
+              h.price_changes ? [h.price_changes.day_60, h.price_changes.day_30, h.price_changes.day_7, h.price_changes.day_1] : []
+            );
+            const hasAny = allChanges.some((v) => v !== null);
+            if (!hasAny) return <span style={{ color: "#60606a", fontSize: 13 }}>데이터 로딩 중...</span>;
+
+            const weightedChange = (key: "day_60" | "day_30" | "day_7" | "day_1") => {
+              let weightedSum = 0, totalWeight = 0;
+              for (const h of filtered) {
+                const val = h.price_changes?.[key];
+                if (val !== null && val !== undefined && h.valuation > 0) {
+                  weightedSum += val * h.valuation;
+                  totalWeight += h.valuation;
+                }
+              }
+              return totalWeight > 0 ? weightedSum / totalWeight : null;
+            };
+
+            return (
+              <>
+                {(["day_60", "day_30", "day_7", "day_1"] as const).map((key) => {
+                  const val = weightedChange(key);
+                  return (
+                    <span key={key} className="font-semibold text-sm" style={{
+                      color: val === null ? "#60606a" : val > 0 ? "#4ade80" : "#ef4444"
+                    }}>
+                      {val === null ? "—" : `${val > 0 ? "+" : ""}${val.toFixed(2)}%`}
+                    </span>
+                  );
+                })}
+              </>
+            );
+          })()}
         </div>
       </div>
 
@@ -452,63 +472,89 @@ function MemberView({ member }: { member: Member }) {
 
       {/* 테이블 */}
       <div className="overflow-x-auto" style={{ border: "1px solid #28282e", borderRadius: 8 }}>
-        <table className="w-full text-sm" style={{ tableLayout: "fixed" }}>
+        <table className="w-full text-sm" style={{ tableLayout: "auto" }}>
           <thead>
             <tr style={{ background: "#141416", borderBottom: "1px solid #28282e" }}>
               <th className="px-2 sm:px-3 py-3 text-left font-medium"
-                style={{ color: "#60606a", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em", width: "30%" }}>
-                종목명
-              </th>
-              <th className="px-2 sm:px-3 py-3 text-right font-medium"
-                style={{ color: "#60606a", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em", width: "28%" }}>
-                평가금액
-              </th>
-              <th className="px-2 sm:px-3 py-3 text-right font-medium"
                 style={{ color: "#60606a", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                종목명(60D-30D-7D-1D)
+              </th>
+              <th className="px-2 sm:px-3 py-3 text-right font-medium"
+                style={{ color: "#60606a", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em", whiteSpace: "nowrap" }}>
                 현재가
+              </th>
+              <th className="px-2 sm:px-3 py-3 text-right font-medium"
+                style={{ color: "#60606a", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em", whiteSpace: "nowrap" }}>
+                평가금액
               </th>
             </tr>
           </thead>
           <tbody>
             {filtered.map((h, i) => {
               const catColor = CATEGORY_COLOR[h.category] ?? "#f0f0ee";
+              const CHANGES = h.price_changes ? [
+                { value: h.price_changes.day_60 },
+                { value: h.price_changes.day_30 },
+                { value: h.price_changes.day_7 },
+                { value: h.price_changes.day_1 },
+              ] : [];
+              const bgColor = i % 2 === 0 ? "#0c0c0e" : "#111113";
               return (
-                <tr key={`${h.ticker}-${i}`}
-                  style={{
-                    borderBottom: "1px solid #1e1e24",
-                    background: i % 2 === 0 ? "#0c0c0e" : "#111113",
-                    transition: "background-color 0.15s",
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#1a1a1f"}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = i % 2 === 0 ? "#0c0c0e" : "#111113"}
-                >
-                  <td className="px-2 sm:px-3 py-3 font-medium">
-                    <div className="truncate" style={{ color: catColor }}>{h.name}</div>
-                    {h.exchange !== "—" && (
-                      <div className="truncate text-xs" style={{ color: "#60606a" }}>{h.ticker}</div>
-                    )}
-                  </td>
-                  <td className="px-2 sm:px-3 py-3 text-right font-medium"
-                    style={{ color: h.valuation === 0 ? "#60606a" : "#f0f0ee", fontSize: "0.8rem" }}>
-                    {h.valuation === 0 ? "—" : `₩${Math.round(h.valuation).toLocaleString()}`}
-                  </td>
-                  <td className="px-2 sm:px-3 py-3 text-right"
-                    style={{ fontSize: "0.8rem" }}>
-                    <div className="font-medium" style={{ color: "#f0f0ee" }}>
-                      {h.ticker === "KRW" ? "₩1" : h.ticker === "USD" ? "$1.00" : formatPrice(h.price, h.currency)}
-                    </div>
-                  </td>
-                </tr>
+                <React.Fragment key={`${h.ticker}-${i}`}>
+                  <tr
+                    style={{
+                      background: bgColor,
+                      transition: "background-color 0.15s",
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#1a1a1f"}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = bgColor}
+                  >
+                    <td className="px-2 sm:px-3 pt-3 pb-1 font-medium">
+                      <div className="truncate" style={{ color: catColor }}>{h.name}</div>
+                    </td>
+                    <td className="px-2 sm:px-3 py-3 text-right">
+                      <div className="font-medium" style={{ color: "#f0f0ee", fontSize: "0.8rem" }}>
+                        {h.ticker === "KRW" ? "₩1" : h.ticker === "USD" ? "$1.00" : formatPrice(h.price, h.currency)}
+                      </div>
+                    </td>
+                    <td className="px-2 sm:px-3 py-3 text-right font-medium"
+                      style={{ color: h.valuation === 0 ? "#60606a" : "#f0f0ee", fontSize: "0.8rem" }}>
+                      {h.valuation === 0 ? "—" : `₩${Math.round(h.valuation).toLocaleString()}`}
+                    </td>
+                  </tr>
+                  {CHANGES.length > 0 && (
+                    <tr style={{ borderBottom: "1px solid #1e1e24", background: bgColor }}>
+                      <td className="px-2 sm:px-3 pb-2 pt-0">
+                        <div className="flex flex-wrap gap-x-2 gap-y-0.5" style={{ fontSize: "0.75rem" }}>
+                          {CHANGES.map((item, idx) => (
+                            <span key={idx} style={{
+                              color: item.value === null ? "#60606a" : item.value > 0 ? "#4ade80" : "#ef4444"
+                            }}>
+                              {item.value === null ? "—" : `${item.value > 0 ? "+" : ""}${item.value.toFixed(1)}%`}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+                      <td></td>
+                      <td></td>
+                    </tr>
+                  )}
+                  {CHANGES.length === 0 && (
+                    <tr style={{ borderBottom: "1px solid #1e1e24", background: bgColor }}>
+                      <td className="pb-1" colSpan={3}></td>
+                    </tr>
+                  )}
+                </React.Fragment>
               );
             })}
           </tbody>
           <tfoot>
             <tr style={{ background: "#1a1a1e", borderTop: "1px solid #28282e" }}>
               <td className="px-2 sm:px-3 py-3 font-semibold" style={{ color: "#d4a853" }}>합계</td>
+              <td></td>
               <td className="px-2 sm:px-3 py-3 text-right font-bold" style={{ color: "#d4a853", fontSize: "0.8rem" }}>
                 ₩{Math.round(filteredKRW).toLocaleString()}
               </td>
-              <td></td>
             </tr>
           </tfoot>
         </table>
