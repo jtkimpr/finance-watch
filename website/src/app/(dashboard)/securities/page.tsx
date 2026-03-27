@@ -139,6 +139,17 @@ function formatPrice(price: number, currency: string) {
   return `₩${price.toLocaleString()}`;
 }
 
+interface PerformanceData {
+  date: string;
+  current: number;
+  changes: {
+    day_1: number | null;
+    day_7: number | null;
+    day_30: number | null;
+    day_60: number | null;
+  };
+}
+
 function computeAllocation(holdings: Holding[]) {
   const totalKRW = holdings.reduce((s, h) => s + h.valuation, 0);
   if (totalKRW === 0) return [];
@@ -172,6 +183,7 @@ export default function SecuritiesPage() {
   const [activeCategory, setActiveCategory] = useState("Total");
   const [holdings, setHoldings] = useState<Holding[]>([]);
   const [loading, setLoading] = useState(true);
+  const [performance, setPerformance] = useState<PerformanceData | null>(null);
 
   useEffect(() => {
     if (sessionStorage.getItem("dnb_auth") === "1") setAuthed(true);
@@ -180,11 +192,22 @@ export default function SecuritiesPage() {
 
   useEffect(() => {
     if (!authed) return;
-    fetch("/api/investments")
+    fetch("/api/holdings-with-history")
       .then((r) => r.json())
-      .then((data: Holding[]) => setHoldings(data))
+      .then((data: any[]) => setHoldings(data))
       .finally(() => setLoading(false));
   }, [authed]);
+
+  useEffect(() => {
+    // GitHub raw URL에서 performance.json 로드
+    fetch(
+      "https://raw.githubusercontent.com/jtkimpr/finance-watch/main/data/performance.json",
+      { cache: "no-store" }
+    )
+      .then((r) => r.json())
+      .then((data: PerformanceData) => setPerformance(data))
+      .catch(() => setPerformance(null));
+  }, []);
 
   const filtered = activeCategory === "Total"
     ? holdings
@@ -219,15 +242,29 @@ export default function SecuritiesPage() {
           </p>
         </div>
         <div className="py-8 px-8">
-          <p className="text-xs uppercase tracking-widest mb-3" style={{ color: "#60606a" }}>자산 배분</p>
-          <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1">
-            {allocation.slice(0, 3).map((a) => (
-              <div key={a.label} className="flex items-center gap-1.5 text-sm">
-                <span className="w-2 h-2 rounded-full inline-block shrink-0" style={{ background: a.color }} />
-                <span style={{ color: "#8a8a92" }}>{a.label}</span>
-                <span className="font-bold" style={{ color: "#f0f0ee" }}>{a.pct.toFixed(1)}%</span>
-              </div>
-            ))}
+          <p className="text-xs uppercase tracking-widest mb-3" style={{ color: "#60606a" }}>성과 (총 평가금액 증감률)</p>
+          <div className="flex flex-wrap gap-x-6 gap-y-2 mt-1">
+            {performance ? (
+              <>
+                {[
+                  { label: "60일전", value: performance.changes.day_60 },
+                  { label: "30일전", value: performance.changes.day_30 },
+                  { label: "7일전", value: performance.changes.day_7 },
+                  { label: "1일전", value: performance.changes.day_1 },
+                ].map((item) => (
+                  <div key={item.label} className="flex flex-col gap-1">
+                    <span style={{ color: "#60606a", fontSize: 12 }}>{item.label}</span>
+                    <span className="font-bold text-lg" style={{
+                      color: item.value === null ? "#60606a" : item.value > 0 ? "#4ade80" : "#ef4444"
+                    }}>
+                      {item.value === null ? "—" : `${item.value > 0 ? "+" : ""}${item.value.toFixed(2)}%`}
+                    </span>
+                  </div>
+                ))}
+              </>
+            ) : (
+              <span style={{ color: "#60606a", fontSize: 13 }}>데이터 로딩 중...</span>
+            )}
           </div>
         </div>
       </div>
@@ -273,8 +310,8 @@ export default function SecuritiesPage() {
         <table className="w-full text-sm">
           <thead>
             <tr style={{ background: "#141416", borderBottom: "1px solid #28282e" }}>
-              {["종목명", "구분", "보유수량", "현재가", "평가금액 (KRW)"].map((col) => (
-                <th key={col} className="px-4 py-3 text-left font-medium whitespace-nowrap"
+              {["종목명", "구분", "평가금액 (KRW)", "현재가"].map((col) => (
+                <th key={col} className="px-3 py-3 text-left font-medium whitespace-nowrap"
                   style={{ color: "#60606a", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em" }}>
                   {col}
                 </th>
@@ -284,41 +321,66 @@ export default function SecuritiesPage() {
           <tbody>
             {filtered.map((h, i) => (
               <tr key={`${h.ticker}-${i}`}
-                style={{ borderBottom: "1px solid #1e1e24", background: i % 2 === 0 ? "#0c0c0e" : "#111113" }}>
-                <td className="px-4 py-3 font-medium whitespace-nowrap" style={{ color: "#f0f0ee" }}>
-                  {h.name}
-                  {h.exchange !== "—" && (
-                    <span className="ml-2 text-xs" style={{ color: "#60606a" }}>{h.ticker} · {h.exchange}</span>
-                  )}
+                style={{
+                  borderBottom: "1px solid #1e1e24",
+                  background: i % 2 === 0 ? "#0c0c0e" : "#111113",
+                  transition: "background-color 0.15s"
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#1a1a1f"}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = i % 2 === 0 ? "#0c0c0e" : "#111113"}
+              >
+                <td className="px-3 py-3 font-medium" style={{ color: "#f0f0ee" }}>
+                  <div className="max-w-xs">
+                    <div className="whitespace-nowrap">{h.name}</div>
+                    {h.exchange !== "—" && (
+                      <span className="text-xs" style={{ color: "#60606a" }}>{h.ticker} · {h.exchange}</span>
+                    )}
+                  </div>
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-3 py-3">
                   <span className="px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap"
                     style={{ color: CATEGORY_COLOR[h.category], background: `${CATEGORY_COLOR[h.category]}18` }}>
                     {h.category}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-right whitespace-nowrap" style={{ color: h.qty === 0 ? "#60606a" : "#a0a0a8" }}>
-                  {h.ticker === "KRW" || h.ticker === "USD"
-                    ? `${h.currency} ${h.qty.toLocaleString()}`
-                    : h.qty > 0 ? `${h.qty.toLocaleString()}주` : "미보유"}
-                </td>
-                <td className="px-4 py-3 text-right whitespace-nowrap" style={{ color: "#a0a0a8" }}>
-                  {h.ticker === "KRW" ? "₩1" : h.ticker === "USD" ? "$1.00" : formatPrice(h.price, h.currency)}
-                </td>
-                <td className="px-4 py-3 text-right font-medium whitespace-nowrap"
+                <td className="px-3 py-3 text-right font-medium whitespace-nowrap"
                   style={{ color: h.valuation === 0 ? "#60606a" : "#f0f0ee" }}>
                   {h.valuation === 0 ? "—" : `₩${Math.round(h.valuation).toLocaleString()}`}
+                </td>
+                <td className="px-3 py-3 text-right" style={{ color: "#a0a0a8", fontSize: "0.875rem" }}>
+                  <div className="flex flex-col items-end gap-1">
+                    <div className="font-medium" style={{ color: "#f0f0ee" }}>
+                      {h.ticker === "KRW" ? "₩1" : h.ticker === "USD" ? "$1.00" : formatPrice(h.price, h.currency)}
+                    </div>
+                    {typeof h === "object" && "price_changes" in h && h.price_changes && (
+                      <div className="flex gap-2 text-xs">
+                        {[
+                          { label: "60d", value: h.price_changes.day_60 },
+                          { label: "30d", value: h.price_changes.day_30 },
+                          { label: "7d", value: h.price_changes.day_7 },
+                          { label: "1d", value: h.price_changes.day_1 },
+                        ].map((item) => (
+                          <span key={item.label} style={{
+                            color: item.value === null ? "#60606a" : item.value > 0 ? "#4ade80" : "#ef4444"
+                          }}>
+                            {item.value === null ? "—" : `${item.value > 0 ? "+" : ""}${item.value.toFixed(1)}%`}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
           </tbody>
           <tfoot>
             <tr style={{ background: "#1a1a1e", borderTop: "1px solid #28282e" }}>
-              <td className="px-4 py-3 font-semibold" style={{ color: "#d4a853" }}>합계</td>
-              <td colSpan={3}></td>
-              <td className="px-4 py-3 text-right font-bold" style={{ color: "#d4a853" }}>
+              <td className="px-3 py-3 font-semibold" style={{ color: "#d4a853" }}>합계</td>
+              <td></td>
+              <td className="px-3 py-3 text-right font-bold" style={{ color: "#d4a853" }}>
                 ₩{Math.round(filteredKRW).toLocaleString()}
               </td>
+              <td></td>
             </tr>
           </tfoot>
         </table>
