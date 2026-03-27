@@ -5,10 +5,9 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 const navItems = [
-  { href: "/about",      label: "Company" },
-  { href: "/securities", label: "Investments" },
-  { href: "/family",     label: "Family" },
-  { href: "/mstr",       label: "STRC" },
+  { href: "/about",  label: "Company" },
+  { href: "/family", label: "Family" },
+  { href: "/mstr",   label: "STRC" },
 ];
 
 const DEFAULT_ADMIN_PASSWORD = "jintae.kim.dnb@gmail.com";

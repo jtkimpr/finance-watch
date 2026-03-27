@@ -118,12 +118,29 @@ interface Holding {
   qty: number;
   price: number;
   valuation: number;
+  price_changes?: {
+    day_1: number | null;
+    day_7: number | null;
+    day_30: number | null;
+    day_60: number | null;
+  };
+}
+
+interface PerformanceData {
+  date: string;
+  current: number;
+  changes: {
+    day_1: number | null;
+    day_7: number | null;
+    day_30: number | null;
+    day_60: number | null;
+  };
 }
 
 const MEMBERS = ["Susie", "Jintae", "Hyunhee"] as const;
 type Member = (typeof MEMBERS)[number];
 
-const ALL_TABS = ["Total", "Susie", "Jintae", "Hyunhee"] as const;
+const ALL_TABS = ["Total", "Dirac & Broglie", "Susie", "Jintae", "Hyunhee"] as const;
 type Tab = (typeof ALL_TABS)[number];
 
 const CATEGORIES = ["Total", "Cash", "Gold", "Kor Stock", "US Stock", "US Bonds", "Crypto"];
@@ -500,6 +517,232 @@ function MemberView({ member }: { member: Member }) {
   );
 }
 
+const DB_CATEGORIES = ["Total", "Crypto", "Cash", "Gold", "Kor Stock", "US Stock", "US Bonds"];
+
+function DiracBroglieView() {
+  const [activeCategory, setActiveCategory] = useState("Total");
+  const [holdings, setHoldings] = useState<Holding[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [performance, setPerformance] = useState<PerformanceData | null>(null);
+
+  useEffect(() => {
+    fetch("/api/holdings-with-history")
+      .then((r) => r.json())
+      .then((data: Holding[]) => setHoldings(data))
+      .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    fetch(
+      "https://raw.githubusercontent.com/jtkimpr/finance-watch/main/data/performance.json",
+      { cache: "no-store" }
+    )
+      .then((r) => r.json())
+      .then((data: PerformanceData) => setPerformance(data))
+      .catch(() => setPerformance(null));
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center" style={{ minHeight: "40vh" }}>
+        <p style={{ color: "#60606a", fontSize: 14 }}>데이터를 불러오는 중...</p>
+      </div>
+    );
+  }
+
+  const usedCategories = DB_CATEGORIES.filter(
+    (cat) => cat === "Total" || holdings.some((h) => h.category === cat)
+  );
+
+  const filtered = activeCategory === "Total"
+    ? holdings
+    : holdings.filter((h) => h.category === activeCategory);
+
+  const totalKRW   = holdings.reduce((s, h) => s + h.valuation, 0);
+  const filteredKRW = filtered.reduce((s, h) => s + h.valuation, 0);
+  const allocation  = computeAllocation(holdings);
+
+  return (
+    <div className="max-w-5xl">
+      {/* 핵심 지표 */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-0 mb-0" style={{ borderBottom: "1px dashed #28282e" }}>
+        <div className="py-6 sm:py-8 pr-0 sm:pr-8 border-b sm:border-b-0 sm:border-r"
+          style={{ borderColor: "#28282e", borderStyle: "dashed" }}>
+          <p className="text-xs uppercase tracking-widest mb-3" style={{ color: "#60606a" }}>총 평가금액</p>
+          <p className="text-2xl sm:text-3xl lg:text-4xl font-bold" style={{ color: "#f0f0ee" }}>
+            ₩{Math.round(totalKRW).toLocaleString()}
+          </p>
+          <p className="text-sm mt-2" style={{ color: "#60606a" }}>
+            약 {(totalKRW / 100000000).toFixed(1)}억원
+          </p>
+        </div>
+        <div className="py-5 sm:py-8 sm:px-8">
+          <div className="flex flex-row sm:flex-wrap gap-x-5 gap-y-2">
+            {performance ? (
+              <>
+                {[
+                  { label: "60D", value: performance.changes.day_60 },
+                  { label: "30D", value: performance.changes.day_30 },
+                  { label: "7D",  value: performance.changes.day_7 },
+                  { label: "1D",  value: performance.changes.day_1 },
+                ].map((item) => (
+                  <div key={item.label} className="flex flex-col gap-0.5 flex-1 sm:flex-none">
+                    <span style={{ color: "#60606a", fontSize: 11 }}>{item.label}</span>
+                    <span className="font-bold text-base sm:text-lg" style={{
+                      color: item.value === null ? "#60606a" : item.value > 0 ? "#4ade80" : "#ef4444"
+                    }}>
+                      {item.value === null ? "—" : `${item.value > 0 ? "+" : ""}${item.value.toFixed(2)}%`}
+                    </span>
+                  </div>
+                ))}
+              </>
+            ) : (
+              <span style={{ color: "#60606a", fontSize: 13 }}>데이터 로딩 중...</span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* 자산 비중 바 */}
+      <div className="py-8" style={{ borderBottom: "1px dashed #28282e" }}>
+        <p className="text-xs uppercase tracking-widest mb-4" style={{ color: "#60606a" }}>자산 카테고리별 비중</p>
+        <div className="flex h-2 rounded-full overflow-hidden mb-5">
+          {allocation.map((a) => (
+            <div key={a.label} style={{ width: `${a.pct}%`, background: a.color }} title={`${a.label}: ${a.pct.toFixed(2)}%`} />
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-x-5 gap-y-2">
+          {allocation.map((a) => (
+            <div key={a.label} className="flex items-center gap-1.5" title={a.label}>
+              <span className="w-2.5 h-2.5 rounded-full inline-block shrink-0" style={{ background: a.color }} />
+              <span className="text-sm font-bold" style={{ color: "#f0f0ee" }}>{a.pct.toFixed(1)}%</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 카테고리 필터 */}
+      <div className="flex flex-wrap gap-2 py-6">
+        {usedCategories.map((cat) => {
+          const isActive = activeCategory === cat;
+          const catColor = cat === "Total" ? "#d4a853" : (CATEGORY_COLOR[cat] ?? "#d4a853");
+          return (
+            <button key={cat} onClick={() => setActiveCategory(cat)}
+              className="px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm transition-all"
+              style={{
+                background: isActive ? `${catColor}22` : "#1a1a1e",
+                color: isActive ? catColor : `${catColor}99`,
+                border: "1px solid",
+                borderColor: isActive ? catColor : `${catColor}44`,
+                fontWeight: isActive ? 600 : 400,
+              }}>
+              {cat}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* 테이블 */}
+      <div className="overflow-x-auto" style={{ border: "1px solid #28282e", borderRadius: 8 }}>
+        <table className="w-full text-sm" style={{ tableLayout: "fixed" }}>
+          <thead>
+            <tr style={{ background: "#141416", borderBottom: "1px solid #28282e" }}>
+              <th className="px-2 sm:px-3 py-3 text-left font-medium"
+                style={{ color: "#60606a", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em", width: "30%" }}>
+                종목명
+              </th>
+              <th className="px-2 sm:px-3 py-3 text-right font-medium"
+                style={{ color: "#60606a", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em", width: "28%" }}>
+                평가금액
+              </th>
+              <th className="px-2 sm:px-3 py-3 text-right font-medium"
+                style={{ color: "#60606a", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                현재가
+              </th>
+              <th className="hidden lg:table-cell px-3 py-3 text-right font-medium whitespace-nowrap"
+                style={{ color: "#60606a", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em", width: "34%" }}>
+                60D · 30D · 7D · 1D
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map((h, i) => {
+              const catColor = CATEGORY_COLOR[h.category] ?? "#f0f0ee";
+              const CHANGES = h.price_changes ? [
+                { label: "60d", value: h.price_changes.day_60 },
+                { label: "30d", value: h.price_changes.day_30 },
+                { label: "7d",  value: h.price_changes.day_7 },
+                { label: "1d",  value: h.price_changes.day_1 },
+              ] : [];
+              return (
+                <tr key={`${h.ticker}-${i}`}
+                  style={{
+                    borderBottom: "1px solid #1e1e24",
+                    background: i % 2 === 0 ? "#0c0c0e" : "#111113",
+                    transition: "background-color 0.15s",
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#1a1a1f"}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = i % 2 === 0 ? "#0c0c0e" : "#111113"}
+                >
+                  <td className="px-2 sm:px-3 py-3 font-medium">
+                    <div className="truncate" style={{ color: catColor }}>{h.name}</div>
+                    {h.exchange !== "—" && (
+                      <div className="truncate text-xs" style={{ color: "#60606a" }}>{h.ticker}</div>
+                    )}
+                  </td>
+                  <td className="px-2 sm:px-3 py-3 text-right font-medium"
+                    style={{ color: h.valuation === 0 ? "#60606a" : "#f0f0ee", fontSize: "0.8rem" }}>
+                    {h.valuation === 0 ? "—" : `₩${Math.round(h.valuation).toLocaleString()}`}
+                  </td>
+                  <td className="px-2 sm:px-3 py-3 text-right">
+                    <div className="font-medium" style={{ color: "#f0f0ee", fontSize: "0.8rem" }}>
+                      {h.ticker === "KRW" ? "₩1" : h.ticker === "USD" ? "$1.00" : formatPrice(h.price, h.currency)}
+                    </div>
+                    {CHANGES.length > 0 && (
+                      <div className="lg:hidden flex justify-end flex-wrap gap-x-1.5 gap-y-0 mt-1" style={{ fontSize: "0.7rem" }}>
+                        {CHANGES.map((item) => (
+                          <span key={item.label} style={{
+                            color: item.value === null ? "#60606a" : item.value > 0 ? "#4ade80" : "#ef4444"
+                          }}>
+                            {item.value === null ? "—" : `${item.value > 0 ? "+" : ""}${item.value.toFixed(1)}%`}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </td>
+                  <td className="hidden lg:table-cell px-3 py-3 text-right">
+                    {CHANGES.length > 0 && (
+                      <div className="flex justify-end gap-3 text-xs">
+                        {CHANGES.map((item) => (
+                          <span key={item.label} style={{
+                            color: item.value === null ? "#60606a" : item.value > 0 ? "#4ade80" : "#ef4444"
+                          }}>
+                            {item.value === null ? "—" : `${item.value > 0 ? "+" : ""}${item.value.toFixed(1)}%`}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+          <tfoot>
+            <tr style={{ background: "#1a1a1e", borderTop: "1px solid #28282e" }}>
+              <td className="px-2 sm:px-3 py-3 font-semibold" style={{ color: "#d4a853" }}>합계</td>
+              <td className="px-2 sm:px-3 py-3 text-right font-bold" style={{ color: "#d4a853", fontSize: "0.8rem" }}>
+                ₩{Math.round(filteredKRW).toLocaleString()}
+              </td>
+              <td></td>
+              <td className="hidden lg:table-cell"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 export default function FamilyPage() {
   const [authed, setAuthed] = useState(false);
   const [checking, setChecking] = useState(true);
@@ -516,15 +759,15 @@ export default function FamilyPage() {
   return (
     <div>
       {/* 탭 */}
-      <div className="flex gap-3 mb-8">
+      <div className="flex gap-2 mb-8 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
         {ALL_TABS.map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             style={{
-              padding: "8px 24px",
+              padding: "7px 16px",
               borderRadius: 6,
-              fontSize: 14,
+              fontSize: 13,
               fontWeight: activeTab === tab ? 700 : 500,
               background: activeTab === tab ? "#FA660F" : "#1a1a1e",
               color: activeTab === tab ? "#fff" : "#8a8a92",
@@ -532,6 +775,8 @@ export default function FamilyPage() {
               borderColor: activeTab === tab ? "#FA660F" : "#28282e",
               cursor: "pointer",
               transition: "all 0.15s",
+              whiteSpace: "nowrap",
+              flexShrink: 0,
             }}
           >
             {tab}
@@ -541,7 +786,9 @@ export default function FamilyPage() {
 
       {activeTab === "Total"
         ? <TotalView />
-        : <MemberView member={activeTab} />
+        : activeTab === "Dirac & Broglie"
+          ? <DiracBroglieView />
+          : <MemberView member={activeTab as Member} />
       }
     </div>
   );
