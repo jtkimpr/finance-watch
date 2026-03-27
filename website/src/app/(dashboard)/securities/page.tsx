@@ -118,6 +118,12 @@ interface Holding {
   qty: number;
   price: number;
   valuation: number;
+  price_changes?: {
+    day_1: number | null;
+    day_7: number | null;
+    day_30: number | null;
+    day_60: number | null;
+  };
 }
 
 const CATEGORIES = ["Total", "Cash", "Gold", "Kor Stock", "US Stock", "US Bonds"];
@@ -352,7 +358,7 @@ export default function SecuritiesPage() {
                     <div className="font-medium" style={{ color: "#f0f0ee" }}>
                       {h.ticker === "KRW" ? "₩1" : h.ticker === "USD" ? "$1.00" : formatPrice(h.price, h.currency)}
                     </div>
-                    {typeof h === "object" && "price_changes" in h && h.price_changes && (
+                    {h.price_changes && (
                       <div className="flex gap-2 text-xs">
                         {[
                           { label: "60d", value: h.price_changes.day_60 },
