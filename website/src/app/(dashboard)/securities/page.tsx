@@ -304,9 +304,9 @@ export default function SecuritiesPage() {
               className="px-4 py-1.5 rounded-full text-sm transition-all"
               style={{
                 background: isActive ? `${catColor}22` : "#1a1a1e",
-                color: isActive ? catColor : "#8a8a92",
+                color: isActive ? catColor : `${catColor}99`,
                 border: "1px solid",
-                borderColor: isActive ? catColor : "#28282e",
+                borderColor: isActive ? catColor : `${catColor}44`,
                 fontWeight: isActive ? 600 : 400,
               }}>
               {cat}
