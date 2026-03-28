@@ -207,3 +207,21 @@ UB Care, 0163Y0, QQQM, SCHD, SPYM, Strategy, VIG, Bitcoin, Ethereum
   - 3컬럼 멤버 테이블 추가: 멤버 | 총평가금액 | 60D-30D-7D-1D
 - **D&B 탭**: `performance.json` 구조 변경(`members["D&B"].changes`)에 맞게 fetch 로직 수정 (크래시 해결)
 - **Susie/Jintae/Hyunhee 탭**: 헤더에 60D/30D/7D/1D 수익률 표시 추가 (`performance.json` 기반)
+
+### 2026-03-28 (UI/UX 개선)
+
+#### Company 페이지 (about/page.tsx)
+- **Hero 섹션**: 오른쪽 상단 이미지 제거 → 헤드라인 + 설명만 단독 배치
+- **Investment Philosophy 섹션**:
+  - 01, 02, 03 레이아웃 변경: 가로 배치(3컬럼) → 세로 배치(1컬럼)
+  - 각 아이템 왼쪽 정렬 추가 (기존 중앙 정렬에서 변경)
+  - 구분선(dashed border) 제거
+
+#### STRC 페이지 (mstr/page.tsx)
+- **현재 가격 섹션**:
+  - 그리드 컬럼 변경: 4컬럼 → 3컬럼 (개별 가격 차트 섹션과 가로길이 일치)
+  - 반응형 글자 크기 추가 (`clamp()` 함수 사용):
+    - 레이블: `clamp(10px, 1.1vw, 11px)`
+    - 가격: `clamp(16px, 2.2vw, 20px)`
+    - 변화율: `clamp(11px, 1.3vw, 12px)`
+  - 목표: 브라우저 창 크기 변화에 따라 글자 크기 동적 조정 → 글자 절단 방지
