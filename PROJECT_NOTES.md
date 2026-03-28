@@ -137,8 +137,73 @@ UB Care, 0163Y0, QQQM, SCHD, SPYM, Strategy, VIG, Bitcoin, Ethereum
 
 ---
 
-## 다음 작업: 웹사이트 구축
+## 웹사이트 구조 (website/)
 
-`data/watchlist.xlsx`를 데이터 소스로 활용하는 웹사이트 개발 예정.
+### 기술 스택
 
-- 기술 스택 및 상세 요구사항은 작업 시작 시 별도 논의
+- **Framework**: Next.js 15 (App Router), TypeScript, Tailwind CSS
+- **배포**: Vercel (`website/` 서브디렉토리 기준) → `diracbroglie.vercel.app`
+- **데이터**: GitHub Raw URL로 JSON 파일 직접 fetch
+
+### 주요 데이터 파일 (data/)
+
+| 파일 | 설명 | 생성 방법 |
+|---|---|---|
+| `portfolio.json` | 멤버별 보유 종목 및 평가금액 | `update_watchlist.py` 실행 시 자동 생성 |
+| `price-history.json` | 종목별 60D/30D/7D/1D 가격 변화율 | `update_watchlist.py` 실행 시 자동 생성 |
+| `performance.json` | 멤버별 포트폴리오 수익률 (Summary 시트 기반) | `scripts/generate_performance.py` 실행 |
+
+### performance.json 구조
+
+```json
+{
+  "date": "2026-03-28",
+  "members": {
+    "Total":   { "current": 5742722488, "changes": { "day_1": -0.15, "day_7": -1.1, "day_30": 0.19, "day_60": 0.14 } },
+    "Susie":   { "current": 571891809,  "changes": { "day_1": ..., "day_7": ..., "day_30": ..., "day_60": ... } },
+    "D&B":     { "current": 4095573863, "changes": { ... } },
+    "Jintae":  { "current": 842764769,  "changes": { ... } },
+    "Hyunhee": { "current": 232492047,  "changes": { ... } }
+  }
+}
+```
+
+- watchlist.xlsx **Summary 시트** 컬럼 매핑: `Total(B), Susie(C), D&B(D), Jintae(E), Hyunhee(F)`
+- **수익률 계산 원칙**: 종목 가중평균 방식 절대 금지 — 반드시 Summary 시트 이력 데이터 기반으로 계산
+
+### API 라우트
+
+| 경로 | 설명 |
+|---|---|
+| `/api/family-total` | Total 탭용: 멤버별 총액/배분/수익률 + 전체 합계 (`performance.json` 사용) |
+| `/api/family?member=X` | 멤버별 보유 종목 목록 (`portfolio.json` 사용) |
+| `/api/holdings-with-history` | D&B 보유 종목 + 종목별 가격 변화율 (`portfolio.json` + `price-history.json`) |
+
+### 페이지: /family
+
+비밀번호 보호 페이지 (기본 비밀번호: `980612`, localStorage `dnb_password`로 변경 가능)
+
+**탭 구성**:
+- **Total**: 전체 합산 총평가금액 + 60D/30D/7D/1D + 자산배분 바 + 멤버 테이블
+- **Dirac & Broglie**: 총평가금액 + 60D/30D/7D/1D + 자산배분 바 + 종목 테이블 (종목별 가격변화 포함)
+- **Susie / Jintae / Hyunhee**: 총평가금액 + 60D/30D/7D/1D + 자산배분 바 + 종목 테이블
+
+**수익률 표시 원칙**: 모든 탭의 60D/30D/7D/1D는 `performance.json` → `members[키].changes`에서 가져옴
+- D&B 키: `"D&B"`, Susie/Jintae/Hyunhee는 동일 이름, Total은 `"Total"`
+
+---
+
+## 주요 이력
+
+### 2026-03-28
+
+- **`scripts/generate_performance.py`** 추가: watchlist.xlsx Summary 시트에서 멤버별 수익률 계산 → `data/performance.json` 생성
+  - Summary 시트: Date(A), Total(B), Susie(C), D&B(D), Jintae(E), Hyunhee(F)
+- **`/api/family-total`** 리팩토링: `price-history.json` 기반 가중평균 방식 → `performance.json` 방식으로 교체
+  - `grandPerformance` 필드 추가 (Summary Total 컬럼 기반)
+- **`/family` 페이지 (Total 탭)** 전면 개편:
+  - 멤버별 카드 + 파이차트 제거
+  - 자산 카테고리별 배분 바 추가 (D&B 페이지 스타일과 통일)
+  - 3컬럼 멤버 테이블 추가: 멤버 | 총평가금액 | 60D-30D-7D-1D
+- **D&B 탭**: `performance.json` 구조 변경(`members["D&B"].changes`)에 맞게 fetch 로직 수정 (크래시 해결)
+- **Susie/Jintae/Hyunhee 탭**: 헤더에 60D/30D/7D/1D 수익률 표시 추가 (`performance.json` 기반)
