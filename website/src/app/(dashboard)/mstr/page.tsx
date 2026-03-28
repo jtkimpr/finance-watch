@@ -387,7 +387,7 @@ export default function MstrPage() {
               ) : (
                 <div style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(4, 1fr)',
+                  gridTemplateColumns: 'repeat(3, 1fr)',
                   gap: 12,
                 }}>
                   {cards.filter(c => ['mnav', 'btc', 'mstr', 'strc'].includes(c.key)).map(card => (
@@ -397,13 +397,13 @@ export default function MstrPage() {
                       borderRadius: 8,
                       padding: '14px 16px',
                     }}>
-                      <div style={{ fontSize: 11, fontWeight: 700, color: COLORS[card.key], letterSpacing: 1 }}>
+                      <div style={{ fontSize: 'clamp(10px, 1.1vw, 11px)', fontWeight: 700, color: COLORS[card.key], letterSpacing: 1 }}>
                         {LABELS[card.key]}
                       </div>
-                      <div style={{ fontSize: 20, fontWeight: 600, color: '#fff', margin: '6px 0 4px' }}>
+                      <div style={{ fontSize: 'clamp(16px, 2.2vw, 20px)', fontWeight: 600, color: '#fff', margin: '6px 0 4px' }}>
                         {card.price}
                       </div>
-                      <div style={{ fontSize: 12, fontWeight: 500, color: dirColor(card.dir) }}>
+                      <div style={{ fontSize: 'clamp(11px, 1.3vw, 12px)', fontWeight: 500, color: dirColor(card.dir) }}>
                         {card.change} {card.pct}
                       </div>
                     </div>
