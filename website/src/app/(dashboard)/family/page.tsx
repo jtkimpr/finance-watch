@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const DEFAULT_PASSWORD = "980612";
 
@@ -787,10 +788,25 @@ function DiracBroglieView() {
   );
 }
 
-export default function FamilyPage() {
+function FamilyPageContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [authed, setAuthed] = useState(false);
   const [checking, setChecking] = useState(true);
-  const [activeTab, setActiveTab] = useState<Tab>("Total");
+
+  const tabParam = searchParams.get("tab") as Tab | null;
+  const activeTab: Tab = (tabParam && (ALL_TABS as readonly string[]).includes(tabParam)) ? tabParam : "Total";
+
+  function setActiveTab(tab: Tab) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (tab === "Total") {
+      params.delete("tab");
+    } else {
+      params.set("tab", tab);
+    }
+    const qs = params.toString();
+    router.replace(qs ? `/family?${qs}` : "/family", { scroll: false });
+  }
 
   useEffect(() => {
     if (sessionStorage.getItem("dnb_auth") === "1") setAuthed(true);
@@ -835,5 +851,13 @@ export default function FamilyPage() {
           : <MemberView member={activeTab as Member} />
       }
     </div>
+  );
+}
+
+export default function FamilyPage() {
+  return (
+    <Suspense>
+      <FamilyPageContent />
+    </Suspense>
   );
 }
