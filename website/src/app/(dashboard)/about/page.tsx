@@ -2,11 +2,11 @@ export default function AboutPage() {
   return (
     <div style={{ color: "#f0f0ee" }}>
 
-      {/* ── HERO: 2-col (헤드라인 + 이미지) ── */}
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-start pt-4 pb-10 md:pb-16"
+      {/* ── HERO: 헤드라인 + 설명 ── */}
+      <section className="pt-4 pb-10 md:pb-16"
         style={{ borderBottom: "1px solid #28282e" }}>
 
-        {/* 좌: 헤드라인 + 설명 */}
+        {/* 헤드라인 + 설명 */}
         <div>
           <h1
             className="leading-tight mb-6 md:mb-10"
@@ -49,16 +49,6 @@ export default function AboutPage() {
             across generations.
           </p>
         </div>
-
-        {/* 우: 투자 이미지 */}
-        <div className="relative rounded-xl overflow-hidden" style={{ aspectRatio: "4/3" }}>
-          <img
-            src="https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=1200&auto=format&fit=crop"
-            alt="Investment"
-            className="w-full h-full object-cover"
-            style={{ filter: "brightness(0.75) saturate(0.9)", transform: "scaleY(-1)" }}
-          />
-        </div>
       </section>
 
       {/* ── 투자 철학 ── */}
@@ -66,7 +56,7 @@ export default function AboutPage() {
         <p style={{ fontSize: "clamp(15px, 1.6vw, 20px)", fontWeight: 600, color: "#f0f0ee", marginBottom: 40 }}>
           Investment Philosophy
         </p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-0">
+        <div className="grid grid-cols-1 gap-10">
           {[
             {
               num: "01",
@@ -86,8 +76,8 @@ export default function AboutPage() {
           ].map((item, i) => (
             <div
               key={item.num}
-              className="pr-0 md:pr-12"
-              style={{ borderRight: i < 2 ? "1px dashed #28282e" : "none", paddingLeft: i > 0 ? 48 : 0 }}
+              className="pr-0 text-left"
+              style={{ borderRight: "none", paddingLeft: 0 }}
             >
               <p
                 className="mb-5"
