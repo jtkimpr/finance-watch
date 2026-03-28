@@ -82,16 +82,20 @@ GitHub Actions (하루 4회 KST 00:10 / 09:10 / 12:10 / 16:10)
 Vercel (서버리스 API Routes)
   ├─ /api/holdings-with-history
   │     portfolio.json["Dirac & Broglie"] + price-history.json 병합
+  │     → 각 holding에 price_changes: {day_1, day_7, day_30, day_60} 추가
   ├─ /api/family?member=Susie|Jintae|Hyunhee
-  │     portfolio.json[member] 반환
+  │     portfolio.json[member] + price-history.json 병합
+  │     → 각 holding에 price_changes 추가
   └─ /api/family-total
         portfolio.json 전 멤버 합산 + 카테고리별 비중 계산
 
 클라이언트 (브라우저)
-  ├─ Dirac & Broglie 탭 / securities 페이지: /api/holdings-with-history 호출
-  ├─ Dirac & Broglie 탭 / securities 페이지: performance.json GitHub Raw URL 직접 fetch
+  ├─ Dirac & Broglie 탭: /api/holdings-with-history 호출
+  │     + performance.json → members["D&B"].changes (헤더 수익률)
   ├─ 개인 탭 (Susie/Jintae/Hyunhee): /api/family?member=xxx 호출
+  │     + performance.json → members[member].changes (헤더 수익률)
   └─ Total 탭: /api/family-total 호출
+        + performance.json → members.Total.changes + 각 멤버 changes
 ```
 
 ### 데이터 파일 위치 (GitHub Raw)
@@ -143,21 +147,73 @@ interface Holding {
 ### performance.json 구조
 
 ```typescript
-interface PerformanceData {
-  date: string;
-  current: number;
+interface MemberPerf {
+  current: number | null;
   changes: {
-    day_1: number | null;
-    day_7: number | null;
-    day_30: number | null;
-    day_60: number | null;
+    day_1: number | null;    // 1일 수익률 (%)
+    day_7: number | null;    // 7일 수익률 (%)
+    day_30: number | null;   // 30일 수익률 (%)
+    day_60: number | null;   // 60일 수익률 (%)
+  };
+}
+
+interface PerformanceData {
+  date: string;              // 기준일 (YYYY-MM-DD)
+  members: {
+    Total:   MemberPerf;    // Summary 시트 B열 (전체 합산)
+    "D&B":   MemberPerf;    // Summary 시트 D열 (Dirac & Broglie)
+    Susie:   MemberPerf;    // Summary 시트 C열
+    Jintae:  MemberPerf;    // Summary 시트 E열
+    Hyunhee: MemberPerf;    // Summary 시트 F열
   };
 }
 ```
 
+> **이전 구조** (`date`, `current`, `changes` 최상위 flat 구조)는 2026-03-28에 `members` 구조로 대체되었음.
+
 ---
 
 ## UI 컴포넌트 설계
+
+### Family 페이지 탭별 레이아웃
+
+#### Total 탭 (`TotalView`)
+
+```
+① 총 평가금액(60D-30D-7D-1D)          ← performance.json members.Total
+   ₩5,742,722,488
+   +0.14%  +0.19%  -1.10%  -0.15%
+
+② D&B(60D-30D-7D-1D)  │  Susie(60D-30D-7D-1D)    ← 2×2 그리드
+   ₩4,095,573,863      │  ₩571,891,809              performance.json
+   +2.10% +0.40% ...   │  -9.74% -0.66% ...        members[member]
+   ─────────────────────────────────────
+   Jintae(60D-30D-7D-1D) │  Hyunhee(60D-30D-7D-1D)
+   ₩842,764,769          │  ₩232,492,047
+
+③ 자산 카테고리별 비중 (SVG 도넛 파이차트 5개)
+   Total / Dirac & Broglie / Susie / Jintae / Hyunhee
+   중앙: 총액(억원), 하단: 카테고리별 비중(%)
+```
+
+#### Dirac & Broglie 탭 / 개인 탭 (`DiracBroglieView` / `MemberView`)
+
+```
+① 총 평가금액(60D-30D-7D-1D)          ← performance.json members["D&B"] 또는 members[member]
+   ₩4,095,573,863
+   +2.10%  +0.40%  -1.02%  -0.03%
+
+② 자산 카테고리별 비중 (가로 비중 바)
+
+③ 카테고리 필터 버튼
+
+④ 종목 테이블
+   종목명(60D-30D-7D-1D) │ 현재가 │ 평가금액
+   QQQM                  │        │
+   -10.1% -6.9% -2.5% -1.1%  ← price_changes 서브행 (price-history.json)
+   ...
+   합계                  │        │ ₩XXX
+```
 
 ### 자산 카테고리 색상 시스템
 
@@ -203,17 +259,60 @@ interface PerformanceData {
 
 ### 테이블 구조
 
-`table-layout: fixed` 적용, 컬럼 너비 고정.
+`table-layout: auto` 적용, 3컬럼.
 
-| 컬럼 | 너비 | 표시 조건 |
+| 컬럼 | 정렬 | 내용 |
 |---|---|---|
-| 종목명 | 30% | 항상 |
-| 평가금액 | 28% | 항상 |
-| 현재가 | 나머지 | 항상 (소형 화면: 증감율도 2줄로 표시) |
-| 60D · 30D · 7D · 1D | 34% | `lg` 이상만 (`hidden lg:table-cell`) |
+| 종목명(60D-30D-7D-1D) | 좌 | 종목명 (카테고리 색) |
+| 현재가 | 우 | KRW/USD 가격 |
+| 평가금액 | 우 | KRW 환산 평가금액 |
 
-- 종목명: 카테고리 색으로 표시, 넘치면 `truncate` (말줄임)
-- 소형화면 증감율: `현재가` 셀 내에 `lg:hidden` div로 표시
+**2-행 패턴** (종목마다 메인 행 + 수익률 서브행):
+```
+┌─────────────────────────────┬──────────┬──────────────────┐
+│ QQQM                        │  $481.89 │ ₩276,429,300     │
+├─────────────────────────────┴──────────┴──────────────────┤
+│ -10.1%  -6.9%  -2.5%  -1.1%                              │
+└──────────────────────────────────────────────────────────┘
+```
+
+- 종목명: 카테고리 색, ticker/코드 제거
+- 수익률 서브행: `price_changes` 기반 (60D→30D→7D→1D 순), null이면 `—`
+- 수익률 색: 양수 `#4ade80` (초록), 음수 `#ef4444` (빨강), null `#60606a` (회색)
+- 합계 행: 3번째 컬럼(평가금액)에 표시
+
+---
+
+---
+
+## 스크립트 (`scripts/`)
+
+| 파일 | 역할 | 출력 |
+|---|---|---|
+| `generate_performance.py` | watchlist.xlsx Summary 시트 → 멤버별 60D/30D/7D/1D 수익률 | `data/performance.json` |
+| `generate_price_history.py` | watchlist.xlsx Price 시트 → 종목별 현재가 + 기간별 변동률 | `data/price-history.json` |
+| `generate_portfolio_json.py` | watchlist.xlsx Info 시트 → 보유 종목 JSON | `data/portfolio.json` |
+| `update_holdings.py` | 보유 수량/단가 업데이트 | watchlist.xlsx 수정 |
+| `update_prices.py` | 시장 가격 수집 (Yahoo Finance 등) | watchlist.xlsx 수정 |
+| `pull_sync.sh` | GitHub 최신 pull + 스크립트 순차 실행 | — |
+
+### Price 시트 컬럼명 → ticker 매핑 규칙 (`generate_price_history.py`)
+
+Price 시트 헤더가 ticker와 다를 경우 3단계 우선순위로 매핑:
+
+1. **직접 일치**: 헤더 = ticker (예: `QQQM`, `423160`)
+2. **Name 역매핑**: 헤더 = Info 시트 Name 컬럼 (예: `Bitcoin` → `BTC_USDT`)
+3. **수동 폴백** (`MANUAL_HEADER_TO_TICKER`):
+   ```python
+   "Strategy Prf"   → "STRK"
+   "Strategy Prf A" → "STRC"
+   "Strategy Prf D" → "STRD"
+   "Strategy Prf F" → "STRF"
+   "USDT_KRW Upbit" → "USDT_KRW"
+   "UB Care"        → "032620"
+   "Strategy"       → "MSTR"
+   ```
+> 새 종목을 Price 시트에 다른 이름으로 추가할 경우 이 폴백 딕셔너리에 수동 추가 필요.
 
 ---
 
@@ -267,7 +366,53 @@ website/
 
 ## 업데이트 이력
 
-### 2026-03-27 (최신)
+### 2026-03-28 (최신)
+
+#### Family 페이지 전면 개편 (UI/UX)
+
+**DiracBroglieView 헤더 변경**
+- 2컬럼 그리드 (총 평가금액 + 퍼포먼스) → 단일 컬럼
+- 레이블: `총 평가금액(60D-30D-7D-1D)`, 금액, 수익률 4개 1행
+- 수익률 소스: `performance.json` → `members["D&B"].changes` (Summary 시트 D열)
+- "약 41.0억원" 텍스트 제거
+
+**DiracBroglieView 테이블 변경**
+- 4컬럼 → 3컬럼: `종목명(60D-30D-7D-1D) | 현재가 | 평가금액`
+- 종목 코드(ticker) 종목명 하단 표시 제거
+- 종목별 수익률 서브행 추가: 60D · 30D · 7D · 1D (price-history.json 기반)
+- 합계 위치: 3번째 컬럼(평가금액)으로 이동
+
+**MemberView (Susie/Jintae/Hyunhee) 동일 적용**
+- 헤더 동일 구조, 수익률 소스: `performance.json` → `members[member].changes`
+- 테이블 동일 구조 (3컬럼 + 수익률 서브행)
+- `/api/family`: `price-history.json` 병합 추가 (이전에는 `portfolio.json`만 반환)
+
+**TotalView 전면 개편**
+- ① Total 헤더: `총 평가금액(60D-30D-7D-1D)` + `members.Total.changes`
+- ② 멤버별 서브헤더: D&B / Susie / Jintae / Hyunhee 2×2 그리드, 각각 금액 + 수익률 4개
+- ③ 자산 카테고리별 비중: 가로 바 차트 → **SVG 도넛 파이차트 5개** (Total + 4 멤버)
+  - 중앙에 총액(억원) 표시, 하단에 카테고리별 비중(%) 목록
+
+#### 데이터 파이프라인 개선
+
+**`generate_price_history.py` 전면 수정** (32/33 종목 수익률 복구, 이전 9/33)
+- Info 시트 `Name → ticker` 역매핑 추가 (② 매핑 경로)
+- `MANUAL_HEADER_TO_TICKER` 수동 폴백 추가 (③ 매핑 경로):
+  - `Strategy Prf → STRK`, `Strategy Prf A → STRC`, `Strategy Prf D → STRD`
+  - `Strategy Prf F → STRF`, `USDT_KRW Upbit → USDT_KRW`, `UB Care → 032620`, `Strategy → MSTR`
+- row-offset 기반 날짜 계산 → **날짜 기반 series 매핑**으로 전환
+  - 최대 200행 수집, 각 종목별 `(date, price)` 시리즈 구성
+  - current = 가장 최신 날짜 유효값 (빈 행 무시)
+  - day_1/7/30/60 = 현재 기준일 - N일에 가장 가까운 실제 거래일 (±5일 허용)
+
+**`generate_performance.py` 구조 변경** (flat → members 구조)
+- Summary 시트 A~F열 전체 파싱 (A=Date, B=Total, C=Susie, D=D&B, E=Jintae, F=Hyunhee)
+- 출력: `{ date, members: { Total, "D&B", Susie, Jintae, Hyunhee } }` 형태
+- 각 멤버별 60D/30D/7D/1D 변동률 독립 계산
+
+---
+
+### 2026-03-27
 
 - **네비게이션 변경**: `Investments` 메뉴 제거 → `Company | Family | STRC | 아이콘`
 - **Family 페이지 탭 추가**: `Dirac & Broglie` 탭 신설
