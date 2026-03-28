@@ -375,24 +375,24 @@
     "name": "Bitcoin",
     "ticker": "BTC_USDT",
     "category": "Crypto",
-    "current_price": 66301.90625,
+    "current_price": 66369.765625,
     "changes": {
-      "day_1": -3.37,
-      "day_7": -6.23,
-      "day_30": -1.75,
-      "day_60": -25.69
+      "day_1": -3.27,
+      "day_7": -6.13,
+      "day_30": -1.65,
+      "day_60": -25.62
     }
   },
   "ETH_USDT": {
     "name": "Ethereum",
     "ticker": "ETH_USDT",
     "category": "Crypto",
-    "current_price": 1991.49462890625,
+    "current_price": 2000.592651367188,
     "changes": {
-      "day_1": -3.35,
-      "day_7": -7.59,
-      "day_30": -1.78,
-      "day_60": -34.2
+      "day_1": -2.91,
+      "day_7": -7.17,
+      "day_30": -1.33,
+      "day_60": -33.9
     }
   }
 }
