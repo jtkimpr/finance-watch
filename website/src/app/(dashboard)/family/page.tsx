@@ -226,15 +226,75 @@ function pctChange(curr: number, prev: number | null): string | null {
   return (pct >= 0 ? "+" : "") + pct.toFixed(2) + "%";
 }
 
+// SVG 도넛 파이차트
+function DonutChart({ slices }: { slices: { pct: number; color: string; cat: string }[] }) {
+  const cx = 50, cy = 50, R = 42, r = 24;
+  let angle = -Math.PI / 2;
+  const paths = slices.map((s) => {
+    const sweep = (s.pct / 100) * 2 * Math.PI;
+    const x1 = cx + R * Math.cos(angle);
+    const y1 = cy + R * Math.sin(angle);
+    const ix1 = cx + r * Math.cos(angle);
+    const iy1 = cy + r * Math.sin(angle);
+    angle += sweep;
+    const x2 = cx + R * Math.cos(angle);
+    const y2 = cy + R * Math.sin(angle);
+    const ix2 = cx + r * Math.cos(angle);
+    const iy2 = cy + r * Math.sin(angle);
+    const large = sweep > Math.PI ? 1 : 0;
+    const d = `M${x1} ${y1} A${R} ${R} 0 ${large} 1 ${x2} ${y2} L${ix2} ${iy2} A${r} ${r} 0 ${large} 0 ${ix1} ${iy1} Z`;
+    return { d, color: s.color, cat: s.cat, pct: s.pct };
+  });
+  return (
+    <svg viewBox="0 0 100 100" className="w-full h-full">
+      {paths.map((p, i) => (
+        <path key={i} d={p.d} fill={p.color} stroke="#0a0a0c" strokeWidth="1.2">
+          <title>{p.cat}: {p.pct.toFixed(1)}%</title>
+        </path>
+      ))}
+    </svg>
+  );
+}
+
+// 수익률 4개 표시 행
+function PerfChanges({ changes }: { changes?: MemberPerf["changes"] | null }) {
+  if (!changes) return <span style={{ color: "#60606a", fontSize: 12 }}>—</span>;
+  return (
+    <div className="flex flex-row gap-x-4">
+      {(["day_60", "day_30", "day_7", "day_1"] as const).map((key) => {
+        const val = changes[key];
+        return (
+          <span key={key} className="font-semibold text-sm" style={{
+            color: val === null ? "#60606a" : val > 0 ? "#4ade80" : "#ef4444",
+          }}>
+            {val === null ? "—" : `${val > 0 ? "+" : ""}${val.toFixed(2)}%`}
+          </span>
+        );
+      })}
+    </div>
+  );
+}
+
 function TotalView() {
   const [data, setData] = useState<FamilyTotalData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [performance, setPerformance] = useState<PerformanceData | null>(null);
 
   useEffect(() => {
     fetch("/api/family-total")
       .then((r) => r.json())
       .then((d) => setData(d))
       .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    fetch(
+      "https://raw.githubusercontent.com/jtkimpr/finance-watch/main/data/performance.json",
+      { cache: "no-store" }
+    )
+      .then((r) => r.json())
+      .then((d: PerformanceData) => setPerformance(d))
+      .catch(() => setPerformance(null));
   }, []);
 
   if (loading) {
@@ -246,66 +306,119 @@ function TotalView() {
   }
   if (!data) return null;
 
-  const { members, grandTotal, grandPrevTotal, grandAllocation } = data;
-  const grandChange = pctChange(grandTotal, grandPrevTotal);
+  const { members, grandTotal, grandAllocation } = data;
+
+  // 파이차트용 슬라이스 생성
+  const makeSlices = (alloc: Record<string, number>) =>
+    CATEGORY_ORDER
+      .map((cat) => ({ cat, pct: alloc[cat] ?? 0, color: CATEGORY_COLOR[cat] ?? "#888" }))
+      .filter((s) => s.pct > 0);
+
+  const MEMBER_PERF_KEY: Record<string, keyof PerformanceData["members"]> = {
+    "Dirac & Broglie": "D&B",
+    "Susie": "Susie",
+    "Jintae": "Jintae",
+    "Hyunhee": "Hyunhee",
+  };
 
   return (
     <div className="max-w-5xl">
-      {/* 총평가금액 카드 그리드 */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-0 mb-0" style={{ borderBottom: "1px dashed #28282e" }}>
-        {/* Grand Total */}
-        <div className="py-6 sm:py-8 pr-0 sm:pr-8 border-b sm:border-b-0 sm:border-r"
-          style={{ borderColor: "#28282e", borderStyle: "dashed" }}>
-          <p className="text-xs uppercase tracking-widest mb-3" style={{ color: "#60606a" }}>전체 합계</p>
-          <p className="text-2xl sm:text-3xl lg:text-4xl font-bold" style={{ color: "#f0f0ee" }}>
-            ₩{Math.round(grandTotal).toLocaleString()}
-          </p>
-          <div className="flex items-center gap-3 mt-2">
-            <p className="text-sm" style={{ color: "#60606a" }}>
-              약 {(grandTotal / 100000000).toFixed(1)}억원
-            </p>
-            {grandChange !== null && (
-              <span className="text-sm font-semibold" style={{ color: grandChange.startsWith("+") ? "#4ade80" : "#ef4444" }}>
-                {grandChange}
-              </span>
-            )}
-          </div>
-        </div>
 
-        {/* 개인별 카드 */}
-        <div className="py-5 sm:py-8 sm:px-8">
-          <p className="text-xs uppercase tracking-widest mb-3" style={{ color: "#60606a" }}>개인별 현황</p>
-          <div className="flex flex-col gap-2">
-            {(["Dirac & Broglie", "Susie", "Jintae", "Hyunhee"] as const).map((m) => {
-              const info = members[m];
-              if (!info) return null;
-              const change = pctChange(info.total, info.prevTotal);
-              return (
-                <div key={m} className="flex items-center justify-between text-sm">
-                  <span style={{ color: "#8a8a92" }}>{m}</span>
-                  <div className="flex items-center gap-3">
-                    <span className="font-medium" style={{ color: "#f0f0ee" }}>
-                      ₩{Math.round(info.total).toLocaleString()}
-                    </span>
-                    {change !== null && (
-                      <span className="text-xs font-semibold w-16 text-right" style={{ color: change.startsWith("+") ? "#4ade80" : "#ef4444" }}>
-                        {change}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+      {/* ① Total 헤더 */}
+      <div className="py-6 sm:py-8" style={{ borderBottom: "1px dashed #28282e" }}>
+        <p className="text-xs uppercase tracking-widest mb-3" style={{ color: "#60606a" }}>
+          총 평가금액(60D-30D-7D-1D)
+        </p>
+        <p className="text-2xl sm:text-3xl lg:text-4xl font-bold" style={{ color: "#f0f0ee" }}>
+          ₩{Math.round(grandTotal).toLocaleString()}
+        </p>
+        <div className="mt-3">
+          <PerfChanges changes={performance?.members.Total?.changes} />
         </div>
       </div>
 
-      {/* 자산 카테고리별 비중 비교 */}
+      {/* ② 멤버별 헤더 2×2 그리드 */}
+      <div className="grid grid-cols-2 gap-0 py-6" style={{ borderBottom: "1px dashed #28282e" }}>
+        {(["Dirac & Broglie", "Susie", "Jintae", "Hyunhee"] as const).map((m, idx) => {
+          const info = members[m];
+          const perfKey = MEMBER_PERF_KEY[m];
+          const perf = performance?.members[perfKey];
+          const isRightCol = idx % 2 === 1;
+          const isBottomRow = idx >= 2;
+          return (
+            <div
+              key={m}
+              className="py-4"
+              style={{
+                paddingLeft: isRightCol ? "1.5rem" : 0,
+                paddingRight: isRightCol ? 0 : "1.5rem",
+                borderLeft: isRightCol ? "1px dashed #28282e" : undefined,
+                borderTop: isBottomRow ? "1px dashed #28282e" : undefined,
+              }}
+            >
+              <p className="text-xs uppercase tracking-widest mb-2" style={{ color: "#60606a" }}>
+                {m}(60D-30D-7D-1D)
+              </p>
+              <p className="text-base sm:text-lg font-bold mb-1" style={{ color: "#f0f0ee" }}>
+                ₩{info ? Math.round(info.total).toLocaleString() : "—"}
+              </p>
+              <PerfChanges changes={perf?.changes} />
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ③ 파이차트 5개 */}
       <div className="py-8">
-        <p className="text-xs uppercase tracking-widest mb-6" style={{ color: "#60606a" }}>자산 카테고리별 비중 비교</p>
+        <p className="text-xs uppercase tracking-widest mb-6" style={{ color: "#60606a" }}>
+          자산 카테고리별 비중
+        </p>
+
+        {/* 차트 그리드 */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6">
+          {TOTAL_DISPLAY_MEMBERS.map((label) => {
+            const alloc = label === "Total" ? grandAllocation : members[label]?.allocation ?? {};
+            const slices = makeSlices(alloc);
+            if (slices.length === 0) return null;
+
+            // 총액 (차트 중앙에 표시할 금액)
+            const amount = label === "Total"
+              ? grandTotal
+              : members[label]?.total ?? 0;
+
+            return (
+              <div key={label} className="flex flex-col items-center">
+                <div className="relative w-28 h-28">
+                  <DonutChart slices={slices} />
+                  {/* 중앙 텍스트 */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <span style={{ color: "#f0f0ee", fontSize: 9, fontWeight: 700, lineHeight: 1.2 }}>
+                      {(amount / 100000000).toFixed(1)}억
+                    </span>
+                  </div>
+                </div>
+                <p className="text-xs mt-2 text-center font-medium" style={{ color: "#a0a0a8" }}>
+                  {label}
+                </p>
+                {/* 비중 수치 */}
+                <div className="flex flex-col gap-0.5 mt-2 w-full">
+                  {slices.map((s) => (
+                    <div key={s.cat} className="flex items-center justify-between text-xs gap-1">
+                      <div className="flex items-center gap-1 min-w-0">
+                        <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: s.color }} />
+                        <span className="truncate" style={{ color: "#60606a" }}>{s.cat}</span>
+                      </div>
+                      <span style={{ color: "#a0a0a8", fontWeight: 600 }}>{s.pct.toFixed(1)}%</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
 
         {/* 범례 */}
-        <div className="flex flex-wrap gap-x-6 gap-y-1 mb-6">
+        <div className="flex flex-wrap gap-x-6 gap-y-1 mt-8 pt-6" style={{ borderTop: "1px dashed #28282e" }}>
           {CATEGORY_ORDER.map((cat) => (
             <div key={cat} className="flex items-center gap-1.5 text-xs">
               <span className="w-2 h-2 rounded-full inline-block shrink-0" style={{ background: CATEGORY_COLOR[cat] ?? "#888" }} />
@@ -313,49 +426,8 @@ function TotalView() {
             </div>
           ))}
         </div>
-
-        {/* 비중 바 테이블 */}
-        <div className="flex flex-col gap-4">
-          {TOTAL_DISPLAY_MEMBERS.map((label) => {
-            const alloc = label === "Total" ? grandAllocation : members[label]?.allocation ?? {};
-            const totalPct = Object.values(alloc).reduce((s, v) => s + v, 0);
-            if (totalPct === 0) return null;
-            return (
-              <div key={label}>
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-xs font-medium" style={{ color: "#a0a0a8" }}>{label}</span>
-                </div>
-                <div className="flex h-5 rounded overflow-hidden">
-                  {CATEGORY_ORDER.map((cat) => {
-                    const pct = alloc[cat] ?? 0;
-                    if (pct === 0) return null;
-                    return (
-                      <div
-                        key={cat}
-                        style={{ width: `${pct}%`, background: CATEGORY_COLOR[cat] ?? "#888" }}
-                        title={`${cat}: ${pct.toFixed(1)}%`}
-                        className="relative group"
-                      />
-                    );
-                  })}
-                </div>
-                <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1.5">
-                  {CATEGORY_ORDER.map((cat) => {
-                    const pct = alloc[cat] ?? 0;
-                    if (pct === 0) return null;
-                    return (
-                      <span key={cat} className="text-xs" style={{ color: "#60606a" }}>
-                        <span style={{ color: CATEGORY_COLOR[cat] ?? "#888" }}>{cat}</span>{" "}
-                        <span style={{ color: "#a0a0a8", fontWeight: 600 }}>{pct.toFixed(1)}%</span>
-                      </span>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })}
-        </div>
       </div>
+
     </div>
   );
 }
