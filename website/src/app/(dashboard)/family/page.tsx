@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
 const DEFAULT_PASSWORD = "980612";
 
@@ -709,8 +709,8 @@ function DiracBroglieView() {
               ] : [];
               const bgColor = i % 2 === 0 ? "#0c0c0e" : "#111113";
               return (
-                <>
-                  <tr key={`${h.ticker}-${i}-main`}
+                <React.Fragment key={`${h.ticker}-${i}`}>
+                  <tr
                     style={{
                       borderBottom: CHANGES.length > 0 ? "none" : "1px solid #1e1e24",
                       background: bgColor,
@@ -733,7 +733,7 @@ function DiracBroglieView() {
                     </td>
                   </tr>
                   {CHANGES.length > 0 && (
-                    <tr key={`${h.ticker}-${i}-perf`}
+                    <tr
                       style={{
                         borderBottom: "1px solid #1e1e24",
                         background: bgColor,
@@ -754,7 +754,7 @@ function DiracBroglieView() {
                       <td></td>
                     </tr>
                   )}
-                </>
+                </React.Fragment>
               );
             })}
           </tbody>
