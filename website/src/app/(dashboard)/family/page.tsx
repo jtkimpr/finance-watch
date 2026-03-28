@@ -250,9 +250,6 @@ function TotalView() {
           ₩{Math.round(grandTotal).toLocaleString()}
         </p>
         <div className="flex flex-row flex-wrap gap-x-5 gap-y-2 mt-3 mb-6">
-          <span className="text-sm" style={{ color: "#60606a" }}>
-            약 {(grandTotal / 100000000).toFixed(1)}억원
-          </span>
           {[
             { label: "60D", value: grandPerformance?.day_60 },
             { label: "30D", value: grandPerformance?.day_30 },
@@ -427,9 +424,6 @@ function MemberView({ member }: { member: Member }) {
         <div className="flex flex-row gap-x-5 gap-y-2 mt-3">
           {memberPerf ? (
             <>
-              <span className="text-sm" style={{ color: "#60606a" }}>
-                약 {(totalKRW / 100000000).toFixed(1)}억원
-              </span>
               {[
                 { label: "60D", value: memberPerf.day_60 },
                 { label: "30D", value: memberPerf.day_30 },
