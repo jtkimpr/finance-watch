@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 const DEFAULT_PASSWORD = "980612";
 
@@ -126,24 +126,14 @@ interface Holding {
   };
 }
 
-interface MemberPerf {
-  current: number | null;
+interface PerformanceData {
+  date: string;
+  current: number;
   changes: {
     day_1: number | null;
     day_7: number | null;
     day_30: number | null;
     day_60: number | null;
-  };
-}
-
-interface PerformanceData {
-  date: string;
-  members: {
-    Total: MemberPerf;
-    "D&B": MemberPerf;
-    Susie: MemberPerf;
-    Jintae: MemberPerf;
-    Hyunhee: MemberPerf;
   };
 }
 
@@ -211,6 +201,7 @@ interface MemberSummary {
   total: number;
   prevTotal: number | null;
   allocation: Record<string, number>;
+  performance: Record<string, number | null>;
 }
 
 interface FamilyTotalData {
@@ -218,6 +209,7 @@ interface FamilyTotalData {
   grandTotal: number;
   grandPrevTotal: number | null;
   grandAllocation: Record<string, number>;
+  grandPerformance: Record<string, number | null>;
 }
 
 function pctChange(curr: number, prev: number | null): string | null {
@@ -226,75 +218,15 @@ function pctChange(curr: number, prev: number | null): string | null {
   return (pct >= 0 ? "+" : "") + pct.toFixed(2) + "%";
 }
 
-// SVG 도넛 파이차트
-function DonutChart({ slices }: { slices: { pct: number; color: string; cat: string }[] }) {
-  const cx = 50, cy = 50, R = 42, r = 24;
-  let angle = -Math.PI / 2;
-  const paths = slices.map((s) => {
-    const sweep = (s.pct / 100) * 2 * Math.PI;
-    const x1 = cx + R * Math.cos(angle);
-    const y1 = cy + R * Math.sin(angle);
-    const ix1 = cx + r * Math.cos(angle);
-    const iy1 = cy + r * Math.sin(angle);
-    angle += sweep;
-    const x2 = cx + R * Math.cos(angle);
-    const y2 = cy + R * Math.sin(angle);
-    const ix2 = cx + r * Math.cos(angle);
-    const iy2 = cy + r * Math.sin(angle);
-    const large = sweep > Math.PI ? 1 : 0;
-    const d = `M${x1} ${y1} A${R} ${R} 0 ${large} 1 ${x2} ${y2} L${ix2} ${iy2} A${r} ${r} 0 ${large} 0 ${ix1} ${iy1} Z`;
-    return { d, color: s.color, cat: s.cat, pct: s.pct };
-  });
-  return (
-    <svg viewBox="0 0 100 100" className="w-full h-full">
-      {paths.map((p, i) => (
-        <path key={i} d={p.d} fill={p.color} stroke="#0a0a0c" strokeWidth="1.2">
-          <title>{p.cat}: {p.pct.toFixed(1)}%</title>
-        </path>
-      ))}
-    </svg>
-  );
-}
-
-// 수익률 4개 표시 행
-function PerfChanges({ changes }: { changes?: MemberPerf["changes"] | null }) {
-  if (!changes) return <span style={{ color: "#60606a", fontSize: 12 }}>—</span>;
-  return (
-    <div className="flex flex-row gap-x-4">
-      {(["day_60", "day_30", "day_7", "day_1"] as const).map((key) => {
-        const val = changes[key];
-        return (
-          <span key={key} className="font-semibold text-sm" style={{
-            color: val === null ? "#60606a" : val > 0 ? "#4ade80" : "#ef4444",
-          }}>
-            {val === null ? "—" : `${val > 0 ? "+" : ""}${val.toFixed(2)}%`}
-          </span>
-        );
-      })}
-    </div>
-  );
-}
-
 function TotalView() {
   const [data, setData] = useState<FamilyTotalData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [performance, setPerformance] = useState<PerformanceData | null>(null);
 
   useEffect(() => {
     fetch("/api/family-total")
       .then((r) => r.json())
       .then((d) => setData(d))
       .finally(() => setLoading(false));
-  }, []);
-
-  useEffect(() => {
-    fetch(
-      "https://raw.githubusercontent.com/jtkimpr/finance-watch/main/data/performance.json",
-      { cache: "no-store" }
-    )
-      .then((r) => r.json())
-      .then((d: PerformanceData) => setPerformance(d))
-      .catch(() => setPerformance(null));
   }, []);
 
   if (loading) {
@@ -306,137 +238,140 @@ function TotalView() {
   }
   if (!data) return null;
 
-  const { members, grandTotal, grandAllocation } = data;
-
-  // 파이차트용 슬라이스 생성
-  const makeSlices = (alloc: Record<string, number>) =>
-    CATEGORY_ORDER
-      .map((cat) => ({ cat, pct: alloc[cat] ?? 0, color: CATEGORY_COLOR[cat] ?? "#888" }))
-      .filter((s) => s.pct > 0);
-
-  const MEMBER_PERF_KEY: Record<string, keyof PerformanceData["members"]> = {
-    "Dirac & Broglie": "D&B",
-    "Susie": "Susie",
-    "Jintae": "Jintae",
-    "Hyunhee": "Hyunhee",
-  };
+  const { members, grandTotal, grandPrevTotal, grandAllocation, grandPerformance } = data;
+  const grandChange = pctChange(grandTotal, grandPrevTotal);
 
   return (
     <div className="max-w-5xl">
-
-      {/* ① Total 헤더 */}
-      <div className="py-6 sm:py-8" style={{ borderBottom: "1px dashed #28282e" }}>
-        <p className="text-xs uppercase tracking-widest mb-3" style={{ color: "#60606a" }}>
-          총 평가금액(60D-30D-7D-1D)
-        </p>
-        <p className="text-2xl sm:text-3xl lg:text-4xl font-bold" style={{ color: "#f0f0ee" }}>
+      {/* 총평가금액 + 자산 카테고리별 비중 */}
+      <div className="py-8" style={{ borderBottom: "1px dashed #28282e" }}>
+        <p className="text-xs uppercase tracking-widest mb-3" style={{ color: "#60606a" }}>총 평가금액</p>
+        <p className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-6" style={{ color: "#f0f0ee" }}>
           ₩{Math.round(grandTotal).toLocaleString()}
         </p>
-        <div className="mt-3">
-          <PerfChanges changes={performance?.members.Total?.changes} />
+        <div className="flex flex-row flex-wrap gap-x-5 gap-y-2 mt-3 mb-6">
+          <span className="text-sm" style={{ color: "#60606a" }}>
+            약 {(grandTotal / 100000000).toFixed(1)}억원
+          </span>
+          {[
+            { label: "60D", value: grandPerformance?.day_60 },
+            { label: "30D", value: grandPerformance?.day_30 },
+            { label: "7D",  value: grandPerformance?.day_7 },
+            { label: "1D",  value: grandPerformance?.day_1 },
+          ].map((item) => (
+            <span key={item.label} className="font-semibold text-sm" style={{
+              color: item.value == null ? "#60606a" : item.value > 0 ? "#4ade80" : "#ef4444"
+            }}>
+              {item.value == null ? "—" : `${item.value > 0 ? "+" : ""}${item.value.toFixed(2)}%`}
+            </span>
+          ))}
         </div>
-      </div>
 
-      {/* ② 멤버별 헤더 2×2 그리드 */}
-      <div className="grid grid-cols-2 gap-0 py-6" style={{ borderBottom: "1px dashed #28282e" }}>
-        {(["Dirac & Broglie", "Susie", "Jintae", "Hyunhee"] as const).map((m, idx) => {
-          const info = members[m];
-          const perfKey = MEMBER_PERF_KEY[m];
-          const perf = performance?.members[perfKey];
-          const isRightCol = idx % 2 === 1;
-          const isBottomRow = idx >= 2;
-          return (
-            <div
-              key={m}
-              className="py-4"
-              style={{
-                paddingLeft: isRightCol ? "1.5rem" : 0,
-                paddingRight: isRightCol ? 0 : "1.5rem",
-                borderLeft: isRightCol ? "1px dashed #28282e" : undefined,
-                borderTop: isBottomRow ? "1px dashed #28282e" : undefined,
-              }}
-            >
-              <p className="text-xs uppercase tracking-widest mb-2" style={{ color: "#60606a" }}>
-                {m}(60D-30D-7D-1D)
-              </p>
-              <p className="text-base sm:text-lg font-bold mb-1" style={{ color: "#f0f0ee" }}>
-                ₩{info ? Math.round(info.total).toLocaleString() : "—"}
-              </p>
-              <PerfChanges changes={perf?.changes} />
-            </div>
-          );
-        })}
-      </div>
-
-      {/* ③ 파이차트 5개 */}
-      <div className="py-8">
-        <p className="text-xs uppercase tracking-widest mb-6" style={{ color: "#60606a" }}>
-          자산 카테고리별 비중
-        </p>
-
-        {/* 차트 그리드 */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6">
-          {TOTAL_DISPLAY_MEMBERS.map((label) => {
-            const alloc = label === "Total" ? grandAllocation : members[label]?.allocation ?? {};
-            const slices = makeSlices(alloc);
-            if (slices.length === 0) return null;
-
-            // 총액 (차트 중앙에 표시할 금액)
-            const amount = label === "Total"
-              ? grandTotal
-              : members[label]?.total ?? 0;
-
+        {/* 자산 카테고리별 비중 바 */}
+        <p className="text-xs uppercase tracking-widest mb-4" style={{ color: "#60606a" }}>자산 카테고리별 비중</p>
+        <div className="flex h-2 rounded-full overflow-hidden mb-5">
+          {CATEGORY_ORDER.map((cat) => {
+            const pct = grandAllocation[cat] ?? 0;
+            if (pct === 0) return null;
             return (
-              <div key={label} className="flex flex-col items-center">
-                <div className="relative w-28 h-28">
-                  <DonutChart slices={slices} />
-                  {/* 중앙 텍스트 */}
-                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    <span style={{ color: "#f0f0ee", fontSize: 9, fontWeight: 700, lineHeight: 1.2 }}>
-                      {(amount / 100000000).toFixed(1)}억
-                    </span>
-                  </div>
-                </div>
-                <p className="text-xs mt-2 text-center font-medium" style={{ color: "#a0a0a8" }}>
-                  {label}
-                </p>
-                {/* 비중 수치 */}
-                <div className="flex flex-col gap-0.5 mt-2 w-full">
-                  {slices.map((s) => (
-                    <div key={s.cat} className="flex items-center justify-between text-xs gap-1">
-                      <div className="flex items-center gap-1 min-w-0">
-                        <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: s.color }} />
-                        <span className="truncate" style={{ color: "#60606a" }}>{s.cat}</span>
-                      </div>
-                      <span style={{ color: "#a0a0a8", fontWeight: 600 }}>{s.pct.toFixed(1)}%</span>
-                    </div>
-                  ))}
-                </div>
+              <div key={cat} style={{ width: `${pct}%`, background: CATEGORY_COLOR[cat] ?? "#888" }} title={`${cat}: ${pct.toFixed(2)}%`} />
+            );
+          })}
+        </div>
+        <div className="flex flex-wrap gap-x-5 gap-y-2">
+          {CATEGORY_ORDER.map((cat) => {
+            const pct = grandAllocation[cat] ?? 0;
+            if (pct === 0) return null;
+            return (
+              <div key={cat} className="flex items-center gap-1.5" title={cat}>
+                <span className="w-2.5 h-2.5 rounded-full inline-block shrink-0" style={{ background: CATEGORY_COLOR[cat] ?? "#888" }} />
+                <span className="text-sm font-bold" style={{ color: "#f0f0ee" }}>{pct.toFixed(1)}%</span>
               </div>
             );
           })}
         </div>
-
-        {/* 범례 */}
-        <div className="flex flex-wrap gap-x-6 gap-y-1 mt-8 pt-6" style={{ borderTop: "1px dashed #28282e" }}>
-          {CATEGORY_ORDER.map((cat) => (
-            <div key={cat} className="flex items-center gap-1.5 text-xs">
-              <span className="w-2 h-2 rounded-full inline-block shrink-0" style={{ background: CATEGORY_COLOR[cat] ?? "#888" }} />
-              <span style={{ color: "#8a8a92" }}>{cat}</span>
-            </div>
-          ))}
-        </div>
       </div>
 
+      {/* 멤버 성과 테이블 */}
+      <div className="py-8">
+        <div className="overflow-x-auto" style={{ border: "1px solid #28282e", borderRadius: 8 }}>
+          <table className="w-full text-sm" style={{ tableLayout: "auto" }}>
+            <thead>
+              <tr style={{ background: "#141416", borderBottom: "1px solid #28282e" }}>
+                <th className="px-3 py-3 text-left font-medium"
+                  style={{ color: "#60606a", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                  멤버
+                </th>
+                <th className="px-3 py-3 text-right font-medium"
+                  style={{ color: "#60606a", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                  총평가금액
+                </th>
+                <th className="px-3 py-3 text-right font-medium"
+                  style={{ color: "#60606a", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                  60D-30D-7D-1D
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {(["Dirac & Broglie", "Susie", "Jintae", "Hyunhee"] as const).map((member, i) => {
+                const info = members[member];
+                if (!info) return null;
+                const bgColor = i % 2 === 0 ? "#0c0c0e" : "#111113";
+                return (
+                  <tr key={member}
+                    style={{
+                      borderBottom: "1px solid #1e1e24",
+                      background: bgColor,
+                      transition: "background-color 0.15s",
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#1a1a1f"}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = bgColor}
+                  >
+                    <td className="px-3 py-3 font-medium" style={{ color: "#f0f0ee" }}>
+                      {member}
+                    </td>
+                    <td className="px-3 py-3 text-right font-medium" style={{ color: "#f0f0ee", fontSize: "0.8rem" }}>
+                      ₩{Math.round(info.total).toLocaleString()}
+                    </td>
+                    <td className="px-3 py-3 text-right">
+                      <div className="flex flex-wrap gap-x-1.5 gap-y-0.5 justify-end" style={{ fontSize: "0.75rem" }}>
+                        {[
+                          { label: "60D", value: info.performance.day_60 },
+                          { label: "30D", value: info.performance.day_30 },
+                          { label: "7D", value: info.performance.day_7 },
+                          { label: "1D", value: info.performance.day_1 },
+                        ].map((item) => (
+                          <span key={item.label} style={{
+                            color: item.value === null ? "#60606a" : item.value > 0 ? "#4ade80" : "#ef4444"
+                          }}>
+                            {item.value === null ? "—" : `${item.value > 0 ? "+" : ""}${item.value.toFixed(2)}%`}
+                          </span>
+                        ))}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }
+
+// performance.json 키 매핑 (멤버명 → performance.json 키)
+const MEMBER_PERF_KEY: Record<string, string> = {
+  "Susie": "Susie",
+  "Jintae": "Jintae",
+  "Hyunhee": "Hyunhee",
+};
 
 function MemberView({ member }: { member: Member }) {
   const [activeCategory, setActiveCategory] = useState("Total");
   const [holdings, setHoldings] = useState<Holding[]>([]);
   const [loading, setLoading] = useState(true);
-  const [performance, setPerformance] = useState<PerformanceData | null>(null);
+  const [memberPerf, setMemberPerf] = useState<Record<string, number | null> | null>(null);
 
   useEffect(() => {
     setLoading(true);
@@ -454,9 +389,12 @@ function MemberView({ member }: { member: Member }) {
       { cache: "no-store" }
     )
       .then((r) => r.json())
-      .then((data: PerformanceData) => setPerformance(data))
-      .catch(() => setPerformance(null));
-  }, []);
+      .then((json: { members?: Record<string, { changes: Record<string, number | null> }> }) => {
+        const key = MEMBER_PERF_KEY[member];
+        setMemberPerf(key ? (json.members?.[key]?.changes ?? null) : null);
+      })
+      .catch(() => setMemberPerf(null));
+  }, [member]);
 
   if (loading) {
     return (
@@ -481,28 +419,40 @@ function MemberView({ member }: { member: Member }) {
   return (
     <div className="max-w-5xl">
       {/* 핵심 지표 */}
-      <div className="py-6 sm:py-8" style={{ borderBottom: "1px dashed #28282e" }}>
-        <p className="text-xs uppercase tracking-widest mb-3" style={{ color: "#60606a" }}>총 평가금액(60D-30D-7D-1D)</p>
-        <p className="text-2xl sm:text-3xl lg:text-4xl font-bold" style={{ color: "#f0f0ee" }}>
-          ₩{Math.round(totalKRW).toLocaleString()}
-        </p>
-        <div className="flex flex-row gap-x-5 gap-y-2 mt-3">
-          {performance ? (
-            <>
-              {(["day_60", "day_30", "day_7", "day_1"] as const).map((key) => {
-                const val = performance.members[member]?.changes[key] ?? null;
-                return (
-                  <span key={key} className="font-semibold text-sm" style={{
-                    color: val === null ? "#60606a" : val > 0 ? "#4ade80" : "#ef4444"
-                  }}>
-                    {val === null ? "—" : `${val > 0 ? "+" : ""}${val.toFixed(2)}%`}
-                  </span>
-                );
-              })}
-            </>
-          ) : (
-            <span style={{ color: "#60606a", fontSize: 13 }}>데이터 로딩 중...</span>
-          )}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-0 mb-0" style={{ borderBottom: "1px dashed #28282e" }}>
+        <div className="py-6 sm:py-8 pr-0 sm:pr-8 border-b sm:border-b-0 sm:border-r"
+          style={{ borderColor: "#28282e", borderStyle: "dashed" }}>
+          <p className="text-xs uppercase tracking-widest mb-3" style={{ color: "#60606a" }}>총 평가금액(60D-30D-7D-1D)</p>
+          <p className="text-2xl sm:text-3xl lg:text-4xl font-bold" style={{ color: "#f0f0ee" }}>
+            ₩{Math.round(totalKRW).toLocaleString()}
+          </p>
+          <div className="flex flex-row gap-x-5 gap-y-2 mt-3 flex-wrap">
+            <span className="text-sm" style={{ color: "#60606a" }}>
+              약 {(totalKRW / 100000000).toFixed(1)}억원
+            </span>
+            {memberPerf ? [
+              { label: "60D", value: memberPerf.day_60 },
+              { label: "30D", value: memberPerf.day_30 },
+              { label: "7D",  value: memberPerf.day_7 },
+              { label: "1D",  value: memberPerf.day_1 },
+            ].map((item) => (
+              <span key={item.label} className="font-semibold text-sm" style={{
+                color: item.value == null ? "#60606a" : item.value > 0 ? "#4ade80" : "#ef4444"
+              }}>
+                {item.value == null ? "—" : `${item.value > 0 ? "+" : ""}${item.value.toFixed(2)}%`}
+              </span>
+            )) : null}
+          </div>
+        </div>
+        <div className="py-5 sm:py-8 sm:px-8">
+          <div className="flex flex-wrap gap-x-4 gap-y-1">
+            {allocation.slice(0, 4).map((a) => (
+              <div key={a.label} className="flex items-center gap-1.5 text-sm" title={a.label}>
+                <span className="w-2 h-2 rounded-full inline-block shrink-0" style={{ background: a.color }} />
+                <span className="font-bold" style={{ color: "#f0f0ee" }}>{a.pct.toFixed(1)}%</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -547,89 +497,63 @@ function MemberView({ member }: { member: Member }) {
 
       {/* 테이블 */}
       <div className="overflow-x-auto" style={{ border: "1px solid #28282e", borderRadius: 8 }}>
-        <table className="w-full text-sm" style={{ tableLayout: "auto" }}>
+        <table className="w-full text-sm" style={{ tableLayout: "fixed" }}>
           <thead>
             <tr style={{ background: "#141416", borderBottom: "1px solid #28282e" }}>
               <th className="px-2 sm:px-3 py-3 text-left font-medium"
-                style={{ color: "#60606a", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                종목명(60D-30D-7D-1D)
+                style={{ color: "#60606a", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em", width: "30%" }}>
+                종목명
               </th>
               <th className="px-2 sm:px-3 py-3 text-right font-medium"
-                style={{ color: "#60606a", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em", whiteSpace: "nowrap" }}>
-                현재가
-              </th>
-              <th className="px-2 sm:px-3 py-3 text-right font-medium"
-                style={{ color: "#60606a", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em", whiteSpace: "nowrap" }}>
+                style={{ color: "#60606a", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em", width: "28%" }}>
                 평가금액
+              </th>
+              <th className="px-2 sm:px-3 py-3 text-right font-medium"
+                style={{ color: "#60606a", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                현재가
               </th>
             </tr>
           </thead>
           <tbody>
             {filtered.map((h, i) => {
               const catColor = CATEGORY_COLOR[h.category] ?? "#f0f0ee";
-              const CHANGES = h.price_changes ? [
-                { value: h.price_changes.day_60 },
-                { value: h.price_changes.day_30 },
-                { value: h.price_changes.day_7 },
-                { value: h.price_changes.day_1 },
-              ] : [];
-              const bgColor = i % 2 === 0 ? "#0c0c0e" : "#111113";
               return (
-                <React.Fragment key={`${h.ticker}-${i}`}>
-                  <tr
-                    style={{
-                      background: bgColor,
-                      transition: "background-color 0.15s",
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#1a1a1f"}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = bgColor}
-                  >
-                    <td className="px-2 sm:px-3 pt-3 pb-1 font-medium">
-                      <div className="truncate" style={{ color: catColor }}>{h.name}</div>
-                    </td>
-                    <td className="px-2 sm:px-3 py-3 text-right">
-                      <div className="font-medium" style={{ color: "#f0f0ee", fontSize: "0.8rem" }}>
-                        {h.ticker === "KRW" ? "₩1" : h.ticker === "USD" ? "$1.00" : formatPrice(h.price, h.currency)}
-                      </div>
-                    </td>
-                    <td className="px-2 sm:px-3 py-3 text-right font-medium"
-                      style={{ color: h.valuation === 0 ? "#60606a" : "#f0f0ee", fontSize: "0.8rem" }}>
-                      {h.valuation === 0 ? "—" : `₩${Math.round(h.valuation).toLocaleString()}`}
-                    </td>
-                  </tr>
-                  {CHANGES.length > 0 && (
-                    <tr style={{ borderBottom: "1px solid #1e1e24", background: bgColor }}>
-                      <td className="px-2 sm:px-3 pb-2 pt-0">
-                        <div className="flex flex-wrap gap-x-2 gap-y-0.5" style={{ fontSize: "0.75rem" }}>
-                          {CHANGES.map((item, idx) => (
-                            <span key={idx} style={{
-                              color: item.value === null ? "#60606a" : item.value > 0 ? "#4ade80" : "#ef4444"
-                            }}>
-                              {item.value === null ? "—" : `${item.value > 0 ? "+" : ""}${item.value.toFixed(1)}%`}
-                            </span>
-                          ))}
-                        </div>
-                      </td>
-                      <td></td>
-                      <td></td>
-                    </tr>
-                  )}
-                  {CHANGES.length === 0 && (
-                    <tr style={{ borderBottom: "1px solid #1e1e24", background: bgColor }}>
-                      <td className="pb-1" colSpan={3}></td>
-                    </tr>
-                  )}
-                </React.Fragment>
+                <tr key={`${h.ticker}-${i}`}
+                  style={{
+                    borderBottom: "1px solid #1e1e24",
+                    background: i % 2 === 0 ? "#0c0c0e" : "#111113",
+                    transition: "background-color 0.15s",
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#1a1a1f"}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = i % 2 === 0 ? "#0c0c0e" : "#111113"}
+                >
+                  <td className="px-2 sm:px-3 py-3 font-medium">
+                    <div className="truncate" style={{ color: catColor }}>{h.name}</div>
+                    {h.exchange !== "—" && (
+                      <div className="truncate text-xs" style={{ color: "#60606a" }}>{h.ticker}</div>
+                    )}
+                  </td>
+                  <td className="px-2 sm:px-3 py-3 text-right font-medium"
+                    style={{ color: h.valuation === 0 ? "#60606a" : "#f0f0ee", fontSize: "0.8rem" }}>
+                    {h.valuation === 0 ? "—" : `₩${Math.round(h.valuation).toLocaleString()}`}
+                  </td>
+                  <td className="px-2 sm:px-3 py-3 text-right"
+                    style={{ fontSize: "0.8rem" }}>
+                    <div className="font-medium" style={{ color: "#f0f0ee" }}>
+                      {h.ticker === "KRW" ? "₩1" : h.ticker === "USD" ? "$1.00" : formatPrice(h.price, h.currency)}
+                    </div>
+                  </td>
+                </tr>
               );
             })}
           </tbody>
           <tfoot>
             <tr style={{ background: "#1a1a1e", borderTop: "1px solid #28282e" }}>
               <td className="px-2 sm:px-3 py-3 font-semibold" style={{ color: "#d4a853" }}>합계</td>
-              <td></td>
               <td className="px-2 sm:px-3 py-3 text-right font-bold" style={{ color: "#d4a853", fontSize: "0.8rem" }}>
                 ₩{Math.round(filteredKRW).toLocaleString()}
               </td>
+              <td></td>
             </tr>
           </tfoot>
         </table>
@@ -659,7 +583,10 @@ function DiracBroglieView() {
       { cache: "no-store" }
     )
       .then((r) => r.json())
-      .then((data: PerformanceData) => setPerformance(data))
+      .then((json: { members?: Record<string, { changes: { day_1: number|null; day_7: number|null; day_30: number|null; day_60: number|null } }> }) => {
+        const changes = json.members?.["D&B"]?.changes ?? null;
+        setPerformance(changes ? { date: "", current: 0, changes } : null);
+      })
       .catch(() => setPerformance(null));
   }, []);
 
@@ -694,16 +621,18 @@ function DiracBroglieView() {
         <div className="flex flex-row gap-x-5 gap-y-2 mt-3">
           {performance ? (
             <>
-              {(["day_60", "day_30", "day_7", "day_1"] as const).map((key) => {
-                const val = performance.members["D&B"]?.changes[key] ?? null;
-                return (
-                  <span key={key} className="font-semibold text-sm" style={{
-                    color: val === null ? "#60606a" : val > 0 ? "#4ade80" : "#ef4444"
-                  }}>
-                    {val === null ? "—" : `${val > 0 ? "+" : ""}${val.toFixed(2)}%`}
-                  </span>
-                );
-              })}
+              {[
+                { label: "60D", value: performance?.changes?.day_60 ?? null },
+                { label: "30D", value: performance?.changes?.day_30 ?? null },
+                { label: "7D",  value: performance?.changes?.day_7 ?? null },
+                { label: "1D",  value: performance?.changes?.day_1 ?? null },
+              ].map((item) => (
+                <span key={item.label} className="font-semibold text-sm" style={{
+                  color: item.value === null ? "#60606a" : item.value > 0 ? "#4ade80" : "#ef4444"
+                }}>
+                  {item.value === null ? "—" : `${item.value > 0 ? "+" : ""}${item.value.toFixed(2)}%`}
+                </span>
+              ))}
             </>
           ) : (
             <span style={{ color: "#60606a", fontSize: 13 }}>데이터 로딩 중...</span>
@@ -780,16 +709,17 @@ function DiracBroglieView() {
               ] : [];
               const bgColor = i % 2 === 0 ? "#0c0c0e" : "#111113";
               return (
-                <React.Fragment key={`${h.ticker}-${i}`}>
-                  <tr
+                <>
+                  <tr key={`${h.ticker}-${i}-main`}
                     style={{
+                      borderBottom: CHANGES.length > 0 ? "none" : "1px solid #1e1e24",
                       background: bgColor,
                       transition: "background-color 0.15s",
                     }}
                     onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#1a1a1f"}
                     onMouseLeave={(e) => e.currentTarget.style.backgroundColor = bgColor}
                   >
-                    <td className="px-2 sm:px-3 pt-3 pb-1 font-medium">
+                    <td className="px-2 sm:px-3 py-3 font-medium">
                       <div className="truncate" style={{ color: catColor }}>{h.name}</div>
                     </td>
                     <td className="px-2 sm:px-3 py-3 text-right">
@@ -803,9 +733,13 @@ function DiracBroglieView() {
                     </td>
                   </tr>
                   {CHANGES.length > 0 && (
-                    <tr
-                      style={{ borderBottom: "1px solid #1e1e24", background: bgColor }}>
-                      <td className="px-2 sm:px-3 pb-2 pt-0">
+                    <tr key={`${h.ticker}-${i}-perf`}
+                      style={{
+                        borderBottom: "1px solid #1e1e24",
+                        background: bgColor,
+                      }}
+                    >
+                      <td className="px-2 sm:px-3 py-2">
                         <div className="flex flex-wrap gap-x-2 gap-y-0.5" style={{ fontSize: "0.75rem" }}>
                           {CHANGES.map((item, idx) => (
                             <span key={idx} style={{
@@ -820,13 +754,7 @@ function DiracBroglieView() {
                       <td></td>
                     </tr>
                   )}
-                  {CHANGES.length === 0 && (
-                    <tr
-                      style={{ borderBottom: "1px solid #1e1e24", background: bgColor }}>
-                      <td className="pb-1" colSpan={3}></td>
-                    </tr>
-                  )}
-                </React.Fragment>
+                </>
               );
             })}
           </tbody>
