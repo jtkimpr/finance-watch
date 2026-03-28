@@ -251,32 +251,6 @@ export default function MstrPage() {
         const curMnavVal = mnavData[mnavData.length - 1]?.value ?? 0;
         setCurMNAV(`현재 ${curMnavVal.toFixed(3)}x`);
 
-        // ── 정규화 비교 차트 ──
-        if (normRef.current) {
-          const normChart = makeChart(normRef.current, 360);
-          const normSeries: Record<string, DataPoint[]> = {
-            mnav: normalize(mnavData),
-            btc:  normalize(dataMap['btc']!),
-            mstr: normalize(dataMap['mstr']!),
-            strf: normalize(dataMap['strf'] ?? []),
-            strk: normalize(dataMap['strk'] ?? []),
-            strc: normalize(dataMap['strc'] ?? []),
-            strd: normalize(dataMap['strd'] ?? []),
-          };
-          Object.entries(normSeries).forEach(([key, data]) => {
-            if (!data.length) return;
-            normChart.addLineSeries({
-              color: COLORS[key as Ticker],
-              lineWidth: 2,
-            }).setData(data);
-          });
-          const refData = normSeries.btc.map(d => ({ time: d.time, value: 100 }));
-          normChart.addLineSeries({
-            color: '#4b5563', lineWidth: 1, lineStyle: LineStyle.Dashed,
-          }).setData(refData);
-          normChart.timeScale().fitContent();
-        }
-
         // ── mNAV 차트 ──
         if (mnavRef.current) {
           const mc = makeChart(mnavRef.current, 320);
@@ -337,30 +311,14 @@ export default function MstrPage() {
 
   return (
     <div className="flex flex-col h-full" style={{ marginTop: '-2rem' }}>
-      {/* 헤더 */}
-      <div className="flex items-baseline gap-3 mb-4 pt-8">
-        <h2 className="text-2xl font-semibold" style={{ color: 'var(--color-brown-dark)' }}>
-          MSTR Preferred
-        </h2>
-        <span className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
-          Strategy 관련 유가증권 · mNAV 대시보드
-          {config && (
-            <span style={{ marginLeft: 8 }}>· 데이터 기준: {config.lastDate}</span>
-          )}
-        </span>
-      </div>
-
-      {/* 대시보드 본문 (다크 테마) */}
+      {/* 대시보드 본문 */}
       <div
         style={{
-          background: '#131722',
           color: '#d1d4dc',
           fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
           fontSize: 14,
-          borderRadius: 12,
-          overflow: 'hidden',
-          padding: '20px 24px',
           flex: 1,
+          paddingTop: '20px',
         }}
       >
         {/* 기간 선택 버튼 → navbar 중앙 슬롯에 포털로 주입 */}
@@ -405,18 +363,17 @@ export default function MstrPage() {
                 borderRadius: 8, padding: '12px 16px',
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 12, color: '#787b86', whiteSpace: 'nowrap' }}>BTC 보유량 (최신 공시)</span>
+                  <span style={{ fontSize: 12, color: '#787b86', whiteSpace: 'nowrap' }}>BTC 보유량</span>
                   <span style={{ color: '#d1d4dc', fontSize: 13 }}>{config?.btcHoldings ?? '—'}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 12, color: '#787b86', whiteSpace: 'nowrap' }}>MSTR 발행주식수 (최신)</span>
+                  <span style={{ fontSize: 12, color: '#787b86', whiteSpace: 'nowrap' }}>MSTR 발행주식수</span>
                   <span style={{ color: '#d1d4dc', fontSize: 13 }}>{config?.mstrShares ?? '—'}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 12, color: '#787b86', whiteSpace: 'nowrap' }}>총 금융부채 (최신 공시)</span>
+                  <span style={{ fontSize: 12, color: '#787b86', whiteSpace: 'nowrap' }}>총 금융부채</span>
                   <span style={{ color: '#ef5350', fontSize: 13 }}>{config?.mstrDebt ?? '—'}</span>
                 </div>
-                <span style={{ fontSize: 11, color: '#787b86' }}>공시 이력 반영 · 날짜별 실제값 적용</span>
               </div>
             </section>
 
@@ -430,10 +387,10 @@ export default function MstrPage() {
               ) : (
                 <div style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(7, 1fr)',
+                  gridTemplateColumns: 'repeat(4, 1fr)',
                   gap: 12,
                 }}>
-                  {cards.map(card => (
+                  {cards.filter(c => ['mnav', 'btc', 'mstr', 'strc'].includes(c.key)).map(card => (
                     <div key={card.key} style={{
                       background: '#1e222d',
                       border: card.key === 'mnav' ? '1px solid rgba(245,158,11,0.4)' : '1px solid #2a2e39',
@@ -453,28 +410,6 @@ export default function MstrPage() {
                   ))}
                 </div>
               )}
-            </section>
-
-            {/* 정규화 비교 차트 */}
-            <section style={{ marginBottom: 28 }}>
-              <div style={{ fontSize: 12, fontWeight: 600, color: '#787b86', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12 }}>
-                성과 비교 (첫 거래일 = 100)
-              </div>
-              <div style={{ background: '#1e222d', border: '1px solid #2a2e39', borderRadius: 8, overflow: 'hidden' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px 8px', borderBottom: '1px solid #2a2e39' }}>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: '#d1d4dc' }}>mNAV · BTC · MSTR · STRF · STRK · STRC · STRD</span>
-                  <span style={{ fontSize: 11, color: '#787b86' }}>첫 거래일 = 100 기준</span>
-                </div>
-                <div style={{ display: 'flex', gap: 16, padding: '8px 16px', flexWrap: 'wrap' }}>
-                  {(Object.entries(COLORS) as [Ticker, string][]).map(([k, c]) => (
-                    <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#d1d4dc' }}>
-                      <div style={{ width: 10, height: 3, borderRadius: 2, background: c }} />
-                      {LABELS[k]}
-                    </div>
-                  ))}
-                </div>
-                <div ref={normRef} style={{ width: '100%' }} />
-              </div>
             </section>
 
             {/* mNAV 차트 */}
