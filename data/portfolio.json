@@ -7,8 +7,8 @@
       "category": "Crypto",
       "currency": "USD",
       "qty": 1.7511246,
-      "price": 69386.65625,
-      "valuation": 183551045.85582554
+      "price": 69192.09375,
+      "valuation": 182539590.28926378
     },
     {
       "name": "Ethereum",
@@ -17,8 +17,8 @@
       "category": "Crypto",
       "currency": "USD",
       "qty": 1.10666755,
-      "price": 2122.7998046875,
-      "valuation": 3548869.8269592775
+      "price": 2132.90576171875,
+      "valuation": 3556087.1257920084
     },
     {
       "name": "KRW",
@@ -37,8 +37,8 @@
       "category": "Cash",
       "currency": "KRW",
       "qty": 64.0,
-      "price": 1063025.0,
-      "valuation": 68033600.0
+      "price": 1063022.0,
+      "valuation": 68033408.0
     },
     {
       "name": "USDT",
@@ -48,7 +48,7 @@
       "currency": "USD",
       "qty": 10.89383819,
       "price": 1.0,
-      "valuation": 16456.776661723503
+      "valuation": 16412.1119251445
     },
     {
       "name": "KINDEX KRX금현물",
@@ -57,8 +57,8 @@
       "category": "Gold",
       "currency": "KRW",
       "qty": 2365.0,
-      "price": 31365.0,
-      "valuation": 74178225.0
+      "price": 31440.0,
+      "valuation": 74355600.0
     },
     {
       "name": "TIGER KOSDAQ150",
@@ -67,8 +67,8 @@
       "category": "Kor Stock",
       "currency": "KRW",
       "qty": 2003.0,
-      "price": 18730.0,
-      "valuation": 37516190.0
+      "price": 18355.0,
+      "valuation": 36765065.0
     },
     {
       "name": "ACE 미국S&P500",
@@ -77,8 +77,8 @@
       "category": "US Stock",
       "currency": "KRW",
       "qty": 807.0,
-      "price": 24885.0,
-      "valuation": 20082195.0
+      "price": 24870.0,
+      "valuation": 20070090.0
     },
     {
       "name": "KODEX 미국나스닥100(TR)",
@@ -97,8 +97,8 @@
       "category": "US Bonds",
       "currency": "KRW",
       "qty": 7981.0,
-      "price": 10225.0,
-      "valuation": 81605725.0
+      "price": 10220.0,
+      "valuation": 81565820.0
     }
   ],
   "D&B": [],
@@ -110,8 +110,8 @@
       "category": "Crypto",
       "currency": "USD",
       "qty": 0.21670934,
-      "price": 69386.65625,
-      "valuation": 22715245.964636493
+      "price": 69192.09375,
+      "valuation": 22590073.907623
     },
     {
       "name": "Ethereum",
@@ -120,8 +120,8 @@
       "category": "Crypto",
       "currency": "USD",
       "qty": 2.63407606,
-      "price": 2122.7998046875,
-      "valuation": 8446974.930501735
+      "price": 2132.90576171875,
+      "valuation": 8464153.45360306
     },
     {
       "name": "KODEX KOFR금리액티브(합성)",
@@ -140,8 +140,8 @@
       "category": "Cash",
       "currency": "KRW",
       "qty": 4095.0,
-      "price": 12805.0,
-      "valuation": 52436475.0
+      "price": 12895.0,
+      "valuation": 52805025.0
     },
     {
       "name": "KRW",
@@ -160,8 +160,8 @@
       "category": "Kor Stock",
       "currency": "KRW",
       "qty": 101579.0,
-      "price": 3965.0,
-      "valuation": 402760735.0
+      "price": 3955.0,
+      "valuation": 401744945.0
     },
     {
       "name": "KODEX 미국나스닥100(TR)",
@@ -180,8 +180,8 @@
       "category": "US Bonds",
       "currency": "KRW",
       "qty": 5600.0,
-      "price": 14115.0,
-      "valuation": 79044000.0
+      "price": 14105.0,
+      "valuation": 78988000.0
     },
     {
       "name": "ACE 미국장기채액티브",
@@ -190,8 +190,8 @@
       "category": "US Bonds",
       "currency": "KRW",
       "qty": 8179.0,
-      "price": 10225.0,
-      "valuation": 83630275.0
+      "price": 10220.0,
+      "valuation": 83589380.0
     }
   ],
   "Hyunhee": [
@@ -202,8 +202,8 @@
       "category": "Crypto",
       "currency": "USD",
       "qty": 0.18921629,
-      "price": 69386.65625,
-      "valuation": 19833453.26909301
+      "price": 69192.09375,
+      "valuation": 19724161.291923214
     },
     {
       "name": "Ethereum",
@@ -212,8 +212,8 @@
       "category": "Crypto",
       "currency": "USD",
       "qty": 1.42834823,
-      "price": 2122.7998046875,
-      "valuation": 4580437.8522146875
+      "price": 2132.90576171875,
+      "valuation": 4589753.039971944
     },
     {
       "name": "TIGER MSCI US 리츠(합성H)",
@@ -222,8 +222,8 @@
       "category": "Cash",
       "currency": "KRW",
       "qty": 4118.0,
-      "price": 14115.0,
-      "valuation": 58125570.0
+      "price": 14105.0,
+      "valuation": 58084390.0
     },
     {
       "name": "KRW",
@@ -252,8 +252,8 @@
       "category": "Gold",
       "currency": "KRW",
       "qty": 642.0,
-      "price": 31365.0,
-      "valuation": 20136330.0
+      "price": 31440.0,
+      "valuation": 20184480.0
     },
     {
       "name": "TIGER KOSDAQ150",
@@ -262,8 +262,8 @@
       "category": "Kor Stock",
       "currency": "KRW",
       "qty": 1030.0,
-      "price": 18730.0,
-      "valuation": 19291900.0
+      "price": 18355.0,
+      "valuation": 18905650.0
     },
     {
       "name": "KODEX 미국나스닥100(TR)",
@@ -282,8 +282,8 @@
       "category": "US Bonds",
       "currency": "KRW",
       "qty": 4185.0,
-      "price": 10225.0,
-      "valuation": 42791625.0
+      "price": 10220.0,
+      "valuation": 42770700.0
     }
   ],
   "Total": [],
@@ -305,8 +305,8 @@
       "category": "Cash",
       "currency": "KRW",
       "qty": 769.0,
-      "price": 1063025.0,
-      "valuation": 817466225.0
+      "price": 1063022.0,
+      "valuation": 817463918.0
     },
     {
       "name": "USD",
@@ -316,7 +316,7 @@
       "currency": "USD",
       "qty": 4883.0,
       "price": 1.0,
-      "valuation": 7374599.627685547
+      "valuation": 7360829.233886719
     },
     {
       "name": "STRC",
@@ -326,7 +326,7 @@
       "currency": "USD",
       "qty": 5335.0,
       "price": 99.83,
-      "valuation": 804353984.8941041
+      "valuation": 802852036.085376
     },
     {
       "name": "KINDEX KRX금현물",
@@ -335,8 +335,8 @@
       "category": "Gold",
       "currency": "KRW",
       "qty": 12757.0,
-      "price": 31365.0,
-      "valuation": 400123305.0
+      "price": 31440.0,
+      "valuation": 401080080.0
     },
     {
       "name": "KBSTAR 200 Total Return",
@@ -345,8 +345,8 @@
       "category": "Kor Stock",
       "currency": "KRW",
       "qty": 4112.0,
-      "price": 46640.0,
-      "valuation": 191783680.0
+      "price": 46170.0,
+      "valuation": 189851040.0
     },
     {
       "name": "TIGER KOSDAQ150",
@@ -355,8 +355,8 @@
       "category": "Kor Stock",
       "currency": "KRW",
       "qty": 7509.0,
-      "price": 18730.0,
-      "valuation": 140643570.0
+      "price": 18355.0,
+      "valuation": 137827695.0
     },
     {
       "name": "KoAct 코스닥액티브",
@@ -365,8 +365,8 @@
       "category": "Kor Stock",
       "currency": "KRW",
       "qty": 3500.0,
-      "price": 11600.0,
-      "valuation": 40600000.0
+      "price": 11245.0,
+      "valuation": 39357500.0
     },
     {
       "name": "QQQM",
@@ -376,7 +376,7 @@
       "currency": "USD",
       "qty": 2131.0,
       "price": 240.8600006103516,
-      "valuation": 775175174.468362
+      "valuation": 773727710.4764957
     },
     {
       "name": "SCHD",
@@ -386,7 +386,7 @@
       "currency": "USD",
       "qty": 8342.0,
       "price": 30.55999946594238,
-      "valuation": 385012873.1563932
+      "valuation": 384293948.8555975
     },
     {
       "name": "VTIP",
@@ -396,7 +396,7 @@
       "currency": "USD",
       "qty": 3580.0,
       "price": 49.9900016784668,
-      "valuation": 270282483.51471543
+      "valuation": 269777792.21988904
     },
     {
       "name": "VGLT",
@@ -406,13 +406,13 @@
       "currency": "USD",
       "qty": 3663.0,
       "price": 55.36999893188477,
-      "valuation": 306311397.45236564
+      "valuation": 305739430.3245295
     }
   ],
   "_prev_totals": {
-    "Susie": 574570133.907165,
-    "Dirac & Broglie": 4137216622.677973,
-    "Jintae": 836863454.315119,
-    "Hyunhee": 232871819.09866184
+    "Susie": 581170831.4594464,
+    "Dirac & Broglie": 4139148988.1136255,
+    "Jintae": 837502779.8951383,
+    "Hyunhee": 234076838.1213077
   }
 }
