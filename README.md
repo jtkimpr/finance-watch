@@ -223,6 +223,39 @@ watchlist.xlsx (Admin 시트)
 
 ---
 
+## 트러블슈팅
+
+### GitHub Actions 워크플로우 실패
+
+**증상**: `Update strategy prices` 스텝 실패 (exit code 1)
+
+**원인**: Finnhub 무료 플랜에서 STRK/STRC/STRD/STRF (Strategy preferred 종목) 403 에러 + 네트워크 타임아웃 발생
+
+**해결 (2026-04-09 적용)**:
+- `update_prices.py`에 yfinance 폴백 추가: Finnhub 실패 시 자동으로 yfinance에서 가격 조회
+- 네트워크 오류 시 5초 대기 후 1회 재시도
+- 일부 티커 실패해도 `exit(1)` 하지 않음 → 워크플로우 계속 진행
+
+**GitHub Actions 로그 확인 방법** (gh CLI 없을 때):
+```bash
+PAT=$(cat ~/.finance_pat)
+# 최근 실행 목록
+curl -s -H "Authorization: token $PAT" \
+  "https://api.github.com/repos/jtkimpr/finance-watch/actions/runs?per_page=5" \
+  | python3 -c "import json,sys; [print(r['id'], r['conclusion'], r['created_at']) for r in json.load(sys.stdin)['workflow_runs']]"
+
+# 특정 run의 스텝별 결과 (RUN_ID 교체)
+curl -s -H "Authorization: token $PAT" \
+  "https://api.github.com/repos/jtkimpr/finance-watch/actions/runs/RUN_ID/jobs" \
+  | python3 -c "import json,sys; [print(s['name'], s['conclusion']) for j in json.load(sys.stdin)['jobs'] for s in j['steps']]"
+
+# 로그 다운로드 (JOB_ID 교체)
+curl -sL -H "Authorization: token $PAT" \
+  "https://api.github.com/repos/jtkimpr/finance-watch/actions/jobs/JOB_ID/logs" -o /tmp/gh_logs.txt
+```
+
+---
+
 ## 로컬 개발 환경
 
 - 서버 시작 스크립트: `/Users/jtmacmini/start-dnb.sh`
@@ -235,6 +268,7 @@ watchlist.xlsx (Admin 시트)
 
 | 날짜 | 내용 |
 |------|------|
+| 2026-04-09 | `update_prices.py` 에러 처리 강화: Finnhub 실패 시 yfinance 폴백, 네트워크 오류 1회 재시도, 일부 실패해도 워크플로우 계속 진행 (exit(1) 제거) |
 | 2026-03-23 | `dnb-website` 레포를 `finance-watch/website/`로 통합 |
 | 2026-03-23 | MSTR 페이지 CSV 로드 방식을 GitHub raw URL 실시간 fetch로 전환 |
 | 2026-03-23 | GitHub Actions에 `update_prices.py`, `update_holdings.py` 스텝 추가 |
