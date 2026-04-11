@@ -111,7 +111,7 @@
     "name": "USDT",
     "ticker": "USDT_KRW",
     "category": "Cash",
-    "current_price": 1485.33,
+    "current_price": 1485.42,
     "changes": {
       "day_1": 0.08,
       "day_7": -1.63,
@@ -123,12 +123,12 @@
     "name": "USD",
     "ticker": "USD_KRW",
     "category": "Cash",
-    "current_price": 1485.410034179688,
+    "current_price": 1482.699951171875,
     "changes": {
-      "day_1": 0.14,
-      "day_7": -1.89,
-      "day_30": -0.51,
-      "day_60": 1.98
+      "day_1": -0.05,
+      "day_7": -2.07,
+      "day_30": -0.69,
+      "day_60": 1.79
     }
   },
   "411060": {
@@ -375,24 +375,24 @@
     "name": "Bitcoin",
     "ticker": "BTC_USDT",
     "category": "Crypto",
-    "current_price": 73023.546875,
+    "current_price": 72846.8671875,
     "changes": {
-      "day_1": 1.73,
-      "day_7": 9.03,
-      "day_30": 3.59,
-      "day_60": 6.12
+      "day_1": 1.49,
+      "day_7": 8.76,
+      "day_30": 3.34,
+      "day_60": 5.87
     }
   },
   "ETH_USDT": {
     "name": "Ethereum",
     "ticker": "ETH_USDT",
     "category": "Crypto",
-    "current_price": 2248.3798828125,
+    "current_price": 2235.58984375,
     "changes": {
-      "day_1": 2.86,
-      "day_7": 9.46,
-      "day_30": 8.46,
-      "day_60": 11.3
+      "day_1": 2.27,
+      "day_7": 8.83,
+      "day_30": 7.84,
+      "day_60": 10.66
     }
   }
 }
