@@ -3,12 +3,12 @@
     "name": "KODEX KOFR금리액티브(합성)",
     "ticker": "423160",
     "category": "Cash",
-    "current_price": 110755.0,
+    "current_price": 110760.0,
     "changes": {
       "day_1": 0.0,
       "day_7": 0.05,
       "day_30": 0.01,
-      "day_60": -0.04
+      "day_60": -0.03
     }
   },
   "459580": {
@@ -27,7 +27,7 @@
     "name": "TIGER CD1년금리액티브(합성)",
     "ticker": "475630",
     "category": "Cash",
-    "current_price": 1063720.0,
+    "current_price": 1063725.0,
     "changes": {
       "day_1": 0.01,
       "day_7": 0.05,
@@ -111,60 +111,60 @@
     "name": "USDT",
     "ticker": "USDT_KRW",
     "category": "Cash",
-    "current_price": 1474.04,
+    "current_price": 1473.1,
     "changes": {
-      "day_1": -0.13,
-      "day_7": -0.14,
-      "day_30": 0.34,
-      "day_60": 0.14
+      "day_1": -0.2,
+      "day_7": -0.2,
+      "day_30": 0.28,
+      "day_60": 0.07
     }
   },
   "USD_KRW": {
     "name": "USD",
     "ticker": "USD_KRW",
     "category": "Cash",
-    "current_price": 1472.47998046875,
+    "current_price": 1472.680053710938,
     "changes": {
-      "day_1": -0.24,
-      "day_7": -0.28,
-      "day_30": -1.2,
-      "day_60": 2.22
+      "day_1": -0.22,
+      "day_7": -0.27,
+      "day_30": -1.19,
+      "day_60": 2.23
     }
   },
   "411060": {
     "name": "KINDEX KRX금현물",
     "ticker": "411060",
     "category": "Gold",
-    "current_price": 31915.0,
+    "current_price": 31935.0,
     "changes": {
-      "day_1": 0.79,
-      "day_7": -0.13,
-      "day_30": -4.73,
-      "day_60": -1.56
+      "day_1": 0.85,
+      "day_7": -0.06,
+      "day_30": -4.67,
+      "day_60": -1.5
     }
   },
   "0085P0": {
     "name": "ACE 미국10년국채액티브(H)",
     "ticker": "0085P0",
     "category": "Bonds",
-    "current_price": 10785.0,
+    "current_price": 10780.0,
     "changes": {
-      "day_1": -0.23,
-      "day_7": 0.14,
-      "day_30": -1.33,
-      "day_60": 0.94
+      "day_1": -0.28,
+      "day_7": 0.09,
+      "day_30": -1.37,
+      "day_60": 0.89
     }
   },
   "476760": {
     "name": "ACE 미국장기채액티브",
     "ticker": "476760",
     "category": "Bonds",
-    "current_price": 10085.0,
+    "current_price": 10075.0,
     "changes": {
-      "day_1": -0.15,
-      "day_7": -0.15,
-      "day_30": -1.03,
-      "day_60": -0.05
+      "day_1": -0.25,
+      "day_7": -0.25,
+      "day_30": -1.13,
+      "day_60": -0.15
     }
   },
   "VGIT": {
@@ -207,72 +207,72 @@
     "name": "TIGER MSCI US 리츠(합성H)",
     "ticker": "182480",
     "category": "Kor Stock",
-    "current_price": 13440.0,
+    "current_price": 13445.0,
     "changes": {
-      "day_1": 1.2,
-      "day_7": 3.58,
-      "day_30": 3.38,
-      "day_60": 2.28
+      "day_1": 1.24,
+      "day_7": 3.62,
+      "day_30": 3.42,
+      "day_60": 2.32
     }
   },
   "232080": {
     "name": "TIGER KOSDAQ150",
     "ticker": "232080",
     "category": "Kor Stock",
-    "current_price": 19760.0,
+    "current_price": 19790.0,
     "changes": {
-      "day_1": 3.37,
-      "day_7": 3.67,
-      "day_30": -1.54,
-      "day_60": 2.22
+      "day_1": 3.53,
+      "day_7": 3.83,
+      "day_30": -1.4,
+      "day_60": 2.38
     }
   },
   "360200": {
     "name": "ACE 미국S&P500",
     "ticker": "360200",
     "category": "Kor Stock",
-    "current_price": 25770.0,
+    "current_price": 25790.0,
     "changes": {
-      "day_1": 0.62,
-      "day_7": 2.71,
-      "day_30": 2.85,
-      "day_60": 4.37
+      "day_1": 0.7,
+      "day_7": 2.79,
+      "day_30": 2.93,
+      "day_60": 4.46
     }
   },
   "361580": {
     "name": "KBSTAR 200 Total Return",
     "ticker": "361580",
     "category": "Kor Stock",
-    "current_price": 53010.0,
+    "current_price": 52955.0,
     "changes": {
-      "day_1": 3.58,
-      "day_7": 5.25,
-      "day_30": 13.02,
-      "day_60": 14.47
+      "day_1": 3.47,
+      "day_7": 5.14,
+      "day_30": 12.9,
+      "day_60": 14.35
     }
   },
   "379800": {
     "name": "KODEX S&P500",
     "ticker": "379800",
     "category": "Kor Stock",
-    "current_price": 23310.0,
+    "current_price": 23320.0,
     "changes": {
-      "day_1": 0.67,
-      "day_7": 2.73,
-      "day_30": 2.91,
-      "day_60": 4.41
+      "day_1": 0.71,
+      "day_7": 2.78,
+      "day_30": 2.96,
+      "day_60": 4.46
     }
   },
   "379810": {
     "name": "KODEX 미국나스닥100(TR)",
     "ticker": "379810",
     "category": "Kor Stock",
-    "current_price": 25295.0,
+    "current_price": 25310.0,
     "changes": {
-      "day_1": 1.16,
-      "day_7": 3.5,
-      "day_30": 3.75,
-      "day_60": 7.09
+      "day_1": 1.22,
+      "day_7": 3.56,
+      "day_30": 3.81,
+      "day_60": 7.15
     }
   },
   "438080": {
@@ -291,23 +291,23 @@
     "name": "유비케어",
     "ticker": "032620",
     "category": "Kor Stock",
-    "current_price": 4190.0,
+    "current_price": 4210.0,
     "changes": {
-      "day_1": -0.12,
-      "day_7": 6.62,
-      "day_30": 5.01,
-      "day_60": 2.44
+      "day_1": 0.36,
+      "day_7": 7.12,
+      "day_30": 5.51,
+      "day_60": 2.93
     }
   },
   "0163Y0": {
     "name": "KoAct 코스닥액티브",
     "ticker": "0163Y0",
     "category": "Kor Stock",
-    "current_price": 12555.0,
+    "current_price": 12575.0,
     "changes": {
-      "day_1": 2.83,
-      "day_7": 7.86,
-      "day_30": -5.99,
+      "day_1": 2.99,
+      "day_7": 8.03,
+      "day_30": -5.84,
       "day_60": null
     }
   },
@@ -375,24 +375,24 @@
     "name": "Bitcoin",
     "ticker": "BTC_USDT",
     "category": "Crypto",
-    "current_price": 74263.140625,
+    "current_price": 74330.0078125,
     "changes": {
-      "day_1": -0.49,
-      "day_7": 3.59,
-      "day_30": -0.8,
-      "day_60": 6.42
+      "day_1": -0.4,
+      "day_7": 3.69,
+      "day_30": -0.71,
+      "day_60": 6.51
     }
   },
   "ETH_USDT": {
     "name": "Ethereum",
     "ticker": "ETH_USDT",
     "category": "Crypto",
-    "current_price": 2323.110107421875,
+    "current_price": 2327.39990234375,
     "changes": {
-      "day_1": -2.46,
-      "day_7": 3.42,
-      "day_30": -1.2,
-      "day_60": 11.37
+      "day_1": -2.28,
+      "day_7": 3.61,
+      "day_30": -1.02,
+      "day_60": 11.57
     }
   }
 }
