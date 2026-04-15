@@ -21,6 +21,10 @@ finance-watch/
 │   ├── generate_portfolio_json.py  # portfolio.json 생성
 │   ├── update_prices.py        # data/strategy/ CSV 가격 업데이트
 │   └── update_holdings.py      # BTC 보유량/주식수/부채 업데이트
+├── trigger/                    # 맥미니 cron 트리거 스크립트
+│   ├── trigger.sh              # GitHub Actions 트리거 + git pull + 파일 복사
+│   ├── trigger.log             # 실행 로그 (git 추적 제외)
+│   └── PROJECT_NOTES.md        # 트리거 상세 설명 및 트러블슈팅
 ├── website/                    # Next.js 웹 대시보드
 │   ├── src/app/(dashboard)/
 │   │   ├── mstr/page.tsx       # MSTR 페이지 (GitHub raw URL로 CSV 실시간 fetch)
@@ -52,7 +56,7 @@ finance-watch/
 | 8 | 맥미니 trigger.sh | git pull → watchlist.xlsx를 Documents 폴더로 복사 |
 | 백업 | GitHub Actions (09:40 KST) | schedule cron (맥미니 장애 시 백업) |
 
-- `trigger.sh` 위치: `/Users/jtmacmini/claude_local/finance-watch-trigger/trigger.sh`
+- `trigger.sh` 위치: `/Users/jtmacmini/claude_github/finance-watch/trigger/trigger.sh`
 - PAT 위치: `/Users/jtmacmini/.finance_pat`
 - PAT 주의: `delete_repo` 권한 없음 (레포 삭제는 GitHub 웹에서 직접)
 
@@ -268,6 +272,7 @@ curl -sL -H "Authorization: token $PAT" \
 
 | 날짜 | 내용 |
 |------|------|
+| 2026-04-15 | `finance-watch-trigger` 독립 레포를 `trigger/` 서브폴더로 통합. crontab 경로 업데이트 |
 | 2026-04-09 | `update_prices.py` 에러 처리 강화: Finnhub 실패 시 yfinance 폴백, 네트워크 오류 1회 재시도, 일부 실패해도 워크플로우 계속 진행 (exit(1) 제거) |
 | 2026-03-23 | `dnb-website` 레포를 `finance-watch/website/`로 통합 |
 | 2026-03-23 | MSTR 페이지 CSV 로드 방식을 GitHub raw URL 실시간 fetch로 전환 |
