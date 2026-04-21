@@ -51,12 +51,12 @@
     "name": "SGOV",
     "ticker": "SGOV",
     "category": "Cash",
-    "current_price": 100.5699996948242,
+    "current_price": 100.5800018310547,
     "changes": {
       "day_1": 0.01,
-      "day_7": 0.06,
-      "day_30": -0.01,
-      "day_60": -0.0
+      "day_7": 0.07,
+      "day_30": 0.0,
+      "day_60": 0.01
     }
   },
   "STRK": {
@@ -111,24 +111,24 @@
     "name": "USDT",
     "ticker": "USDT_KRW",
     "category": "Cash",
-    "current_price": 1471.02,
+    "current_price": 1475.54,
     "changes": {
-      "day_1": -0.1,
-      "day_7": -0.34,
-      "day_30": -2.26,
-      "day_60": -0.13
+      "day_1": 0.31,
+      "day_7": 0.02,
+      "day_30": -2.29,
+      "day_60": 0.38
     }
   },
   "USD_KRW": {
     "name": "USD",
     "ticker": "USD_KRW",
     "category": "Cash",
-    "current_price": 1469.780029296875,
+    "current_price": 1474.969970703125,
     "changes": {
-      "day_1": -0.45,
-      "day_7": -0.42,
-      "day_30": -2.33,
-      "day_60": 1.63
+      "day_1": 0.35,
+      "day_7": 0.05,
+      "day_30": -2.34,
+      "day_60": 1.99
     }
   },
   "411060": {
@@ -171,36 +171,36 @@
     "name": "VGIT",
     "ticker": "VGIT",
     "category": "Bonds",
-    "current_price": 59.72000122070312,
+    "current_price": 59.58990097045898,
     "changes": {
-      "day_1": -0.07,
-      "day_7": 0.32,
-      "day_30": 0.76,
-      "day_60": -0.99
+      "day_1": -0.22,
+      "day_7": -0.12,
+      "day_30": 0.54,
+      "day_60": -1.21
     }
   },
   "VGLT": {
     "name": "VGLT",
     "ticker": "VGLT",
     "category": "Bonds",
-    "current_price": 55.63999938964844,
+    "current_price": 55.41500091552734,
     "changes": {
-      "day_1": -0.02,
-      "day_7": 0.38,
-      "day_30": 1.57,
-      "day_60": -2.47
+      "day_1": -0.4,
+      "day_7": -0.53,
+      "day_30": 1.16,
+      "day_60": -2.87
     }
   },
   "VTIP": {
     "name": "VTIP",
     "ticker": "VTIP",
     "category": "Bonds",
-    "current_price": 50.18000030517578,
+    "current_price": 50.13999938964844,
     "changes": {
-      "day_1": 0.04,
-      "day_7": 0.1,
-      "day_30": 0.52,
-      "day_60": 0.88
+      "day_1": -0.08,
+      "day_7": -0.04,
+      "day_30": 0.44,
+      "day_60": 0.8
     }
   },
   "182480": {
@@ -315,22 +315,22 @@
     "name": "QQQM",
     "ticker": "QQQM",
     "category": "US Stock",
-    "current_price": 266.2999877929688,
+    "current_price": 266.4649963378906,
     "changes": {
-      "day_1": -0.31,
-      "day_7": 4.77,
-      "day_30": 11.13,
-      "day_60": 6.24
+      "day_1": 0.06,
+      "day_7": 2.97,
+      "day_30": 11.19,
+      "day_60": 6.3
     }
   },
   "SCHD": {
     "name": "SCHD",
     "ticker": "SCHD",
     "category": "US Stock",
-    "current_price": 31.03000068664551,
+    "current_price": 31.03070068359375,
     "changes": {
-      "day_1": -0.06,
-      "day_7": 0.94,
+      "day_1": 0.0,
+      "day_7": 1.04,
       "day_30": 2.11,
       "day_60": -1.83
     }
@@ -339,60 +339,60 @@
     "name": "SPYM",
     "ticker": "SPYM",
     "category": "US Stock",
-    "current_price": 83.41999816894531,
+    "current_price": 83.32499694824219,
     "changes": {
-      "day_1": -0.19,
-      "day_7": 3.32,
-      "day_30": 9.29,
-      "day_60": 2.85
+      "day_1": -0.11,
+      "day_7": 1.94,
+      "day_30": 9.16,
+      "day_60": 2.73
     }
   },
   "MSTR": {
     "name": "MSTR",
     "ticker": "MSTR",
     "category": "US Stock",
-    "current_price": 170.8099975585938,
+    "current_price": 168.4423980712891,
     "changes": {
-      "day_1": 2.58,
-      "day_7": 29.05,
-      "day_30": 25.91,
-      "day_60": 30.34
+      "day_1": -1.39,
+      "day_7": 22.58,
+      "day_30": 24.17,
+      "day_60": 28.53
     }
   },
   "VIG": {
     "name": "VIG",
     "ticker": "VIG",
     "category": "US Stock",
-    "current_price": 227.3300018310547,
+    "current_price": 226.8600006103516,
     "changes": {
-      "day_1": -0.06,
-      "day_7": 1.82,
-      "day_30": 6.75,
-      "day_60": -0.11
+      "day_1": -0.21,
+      "day_7": 1.34,
+      "day_30": 6.53,
+      "day_60": -0.31
     }
   },
   "BTC_USDT": {
     "name": "Bitcoin",
     "ticker": "BTC_USDT",
     "category": "Crypto",
-    "current_price": 75955.75,
+    "current_price": 75772.296875,
     "changes": {
-      "day_1": 1.53,
-      "day_7": 1.78,
-      "day_30": 10.15,
-      "day_60": 11.66
+      "day_1": -0.24,
+      "day_7": 2.54,
+      "day_30": 10.59,
+      "day_60": 11.41
     }
   },
   "ETH_USDT": {
     "name": "Ethereum",
     "ticker": "ETH_USDT",
     "category": "Crypto",
-    "current_price": 2316.169921875,
+    "current_price": 2304.5,
     "changes": {
-      "day_1": 1.27,
-      "day_7": -2.75,
-      "day_30": 10.41,
-      "day_60": 17.62
+      "day_1": -0.5,
+      "day_7": -0.67,
+      "day_30": 12.28,
+      "day_60": 16.73
     }
   }
 }
