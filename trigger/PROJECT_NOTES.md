@@ -47,10 +47,10 @@ cron 정시 실행
 
 ```
 # crontab -l 로 확인
-10 0  * * *  /Users/jtmacmini/claude_github/finance-watch/trigger/trigger.sh  # 00:10 KST
-10 9  * * *  /Users/jtmacmini/claude_github/finance-watch/trigger/trigger.sh  # 09:10 KST
-10 12 * * *  /Users/jtmacmini/claude_github/finance-watch/trigger/trigger.sh  # 12:10 KST
-10 16 * * *  /Users/jtmacmini/claude_github/finance-watch/trigger/trigger.sh  # 16:10 KST
+10 0  * * *  /Users/jtmini/claude_github/finance-watch/trigger/trigger.sh  # 00:10 KST
+10 9  * * *  /Users/jtmini/claude_github/finance-watch/trigger/trigger.sh  # 09:10 KST
+10 12 * * *  /Users/jtmini/claude_github/finance-watch/trigger/trigger.sh  # 12:10 KST
+10 16 * * *  /Users/jtmini/claude_github/finance-watch/trigger/trigger.sh  # 16:10 KST
 ```
 
 ---

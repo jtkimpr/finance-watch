@@ -56,8 +56,8 @@ finance-watch/
 | 8 | 맥미니 trigger.sh | git pull → watchlist.xlsx를 Documents 폴더로 복사 |
 | 백업 | GitHub Actions (09:40 KST) | schedule cron (맥미니 장애 시 백업) |
 
-- `trigger.sh` 위치: `/Users/jtmacmini/claude_github/finance-watch/trigger/trigger.sh`
-- PAT 위치: `/Users/jtmacmini/.finance_pat`
+- `trigger.sh` 위치: `/Users/jtmini/claude_github/finance-watch/trigger/trigger.sh`
+- PAT 위치: `/Users/jtmini/.finance_pat`
 - PAT 주의: `delete_repo` 권한 없음 (레포 삭제는 GitHub 웹에서 직접)
 
 ---
@@ -262,9 +262,9 @@ curl -sL -H "Authorization: token $PAT" \
 
 ## 로컬 개발 환경
 
-- 서버 시작 스크립트: `/Users/jtmacmini/start-dnb.sh`
-- launch.json: `/Users/jtmacmini/.claude/launch.json` (서버명: `dnb-website`, 포트: 3000)
-- 작업 디렉토리: `/Users/jtmacmini/claude_github/finance-watch/website`
+- 서버 시작 스크립트: `/Users/jtmini/start-dnb.sh`
+- launch.json: `/Users/jtmini/.claude/launch.json` (서버명: `dnb-website`, 포트: 3000)
+- 작업 디렉토리: `/Users/jtmini/claude_github/finance-watch/website`
 
 ---
 

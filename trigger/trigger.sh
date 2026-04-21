@@ -3,10 +3,10 @@
 # finance-watch GitHub Actions 트리거 스크립트
 # 맥미니 cron에서 정시에 호출 → GitHub Actions workflow_dispatch → 완료 후 git pull
 
-LOG="/Users/jtmacmini/claude_github/finance-watch/trigger/trigger.log"
+LOG="/Users/jtmini/claude_github/finance-watch/trigger/trigger.log"
 REPO="jtkimpr/finance-watch"
-LOCAL_DIR="/Users/jtmacmini/claude_github/finance-watch"
-DEST_FILE="/Users/jtmacmini/Documents/3. Jintae Kim/Finance JT/Plan/Family Balance Sheet_260323.xlsx"
+LOCAL_DIR="/Users/jtmini/claude_github/finance-watch"
+DEST_FILE="/Users/jtmini/Documents/3. Jintae Kim/Finance JT/Plan/Family Balance Sheet_260323.xlsx"
 
 log() {
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" >> "$LOG"
@@ -16,7 +16,7 @@ log() {
 CURL_OPTS="--connect-timeout 10 --max-time 30"
 
 # 1. PAT 로드
-PAT=$(cat /Users/jtmacmini/.finance_pat 2>/dev/null | tr -d '[:space:]')
+PAT=$(cat /Users/jtmini/.finance_pat 2>/dev/null | tr -d '[:space:]')
 if [ -z "$PAT" ]; then
   log "ERROR: PAT를 파일에서 찾을 수 없음 (~/.finance_pat)"
   exit 1
