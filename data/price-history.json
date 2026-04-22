@@ -3,11 +3,11 @@
     "name": "KODEX KOFR금리액티브(합성)",
     "ticker": "423160",
     "category": "Cash",
-    "current_price": 110810.0,
+    "current_price": 110812.0,
     "changes": {
-      "day_1": 0.01,
+      "day_1": 0.0,
       "day_7": 0.05,
-      "day_30": 0.01,
+      "day_30": 0.02,
       "day_60": -0.01
     }
   },
@@ -15,24 +15,24 @@
     "name": "KODEX CD금리액티브(합성)",
     "ticker": "459580",
     "category": "Cash",
-    "current_price": 1075100.0,
+    "current_price": 1075180.0,
     "changes": {
       "day_1": 0.01,
       "day_7": 0.05,
       "day_30": 0.01,
-      "day_60": -0.02
+      "day_60": -0.01
     }
   },
   "475630": {
     "name": "TIGER CD1년금리액티브(합성)",
     "ticker": "475630",
     "category": "Cash",
-    "current_price": 1064220.0,
+    "current_price": 1064300.0,
     "changes": {
       "day_1": 0.01,
       "day_7": 0.05,
-      "day_30": 0.22,
-      "day_60": 0.44
+      "day_30": 0.23,
+      "day_60": 0.45
     }
   },
   "KRW_KRW": {
@@ -51,12 +51,12 @@
     "name": "SGOV",
     "ticker": "SGOV",
     "category": "Cash",
-    "current_price": 100.5800018310547,
+    "current_price": 100.5899963378906,
     "changes": {
-      "day_1": 0.01,
-      "day_7": 0.07,
-      "day_30": 0.0,
-      "day_60": 0.01
+      "day_1": 0.02,
+      "day_7": 0.08,
+      "day_30": 0.01,
+      "day_60": 0.02
     }
   },
   "STRK": {
@@ -111,84 +111,84 @@
     "name": "USDT",
     "ticker": "USDT_KRW",
     "category": "Cash",
-    "current_price": 1475.54,
+    "current_price": 1483.69,
     "changes": {
-      "day_1": 0.31,
-      "day_7": 0.02,
-      "day_30": -2.29,
-      "day_60": 0.38
+      "day_1": 0.86,
+      "day_7": 0.57,
+      "day_30": -1.75,
+      "day_60": 0.93
     }
   },
   "USD_KRW": {
     "name": "USD",
     "ticker": "USD_KRW",
     "category": "Cash",
-    "current_price": 1474.969970703125,
+    "current_price": 1476.47998046875,
     "changes": {
-      "day_1": 0.35,
-      "day_7": 0.05,
-      "day_30": -2.34,
-      "day_60": 1.99
+      "day_1": 0.46,
+      "day_7": 0.15,
+      "day_30": -2.24,
+      "day_60": 2.09
     }
   },
   "411060": {
     "name": "KINDEX KRX금현물",
     "ticker": "411060",
     "category": "Gold",
-    "current_price": 31550.0,
+    "current_price": 31425.0,
     "changes": {
-      "day_1": -0.52,
-      "day_7": -0.36,
-      "day_30": 7.81,
-      "day_60": -4.0
+      "day_1": -0.4,
+      "day_7": -1.55,
+      "day_30": 7.38,
+      "day_60": -4.38
     }
   },
   "0085P0": {
     "name": "ACE 미국10년국채액티브(H)",
     "ticker": "0085P0",
     "category": "Bonds",
-    "current_price": 10755.0,
+    "current_price": 10795.0,
     "changes": {
-      "day_1": -0.46,
-      "day_7": -0.51,
-      "day_30": -1.83,
-      "day_60": 0.14
+      "day_1": 0.37,
+      "day_7": 0.09,
+      "day_30": -1.46,
+      "day_60": 0.51
     }
   },
   "476760": {
     "name": "ACE 미국장기채액티브",
     "ticker": "476760",
     "category": "Bonds",
-    "current_price": 10035.0,
+    "current_price": 10060.0,
     "changes": {
-      "day_1": -0.05,
-      "day_7": -0.64,
-      "day_30": -1.62,
-      "day_60": -1.42
+      "day_1": 0.25,
+      "day_7": -0.25,
+      "day_30": -1.37,
+      "day_60": -1.18
     }
   },
   "VGIT": {
     "name": "VGIT",
     "ticker": "VGIT",
     "category": "Bonds",
-    "current_price": 59.58990097045898,
+    "current_price": 59.52000045776367,
     "changes": {
-      "day_1": -0.22,
-      "day_7": -0.12,
-      "day_30": 0.54,
-      "day_60": -1.21
+      "day_1": -0.33,
+      "day_7": -0.23,
+      "day_30": 0.42,
+      "day_60": -1.33
     }
   },
   "VGLT": {
     "name": "VGLT",
     "ticker": "VGLT",
     "category": "Bonds",
-    "current_price": 55.41500091552734,
+    "current_price": 55.31999969482422,
     "changes": {
-      "day_1": -0.4,
-      "day_7": -0.53,
-      "day_30": 1.16,
-      "day_60": -2.87
+      "day_1": -0.58,
+      "day_7": -0.7,
+      "day_30": 0.99,
+      "day_60": -3.03
     }
   },
   "VTIP": {
@@ -207,107 +207,107 @@
     "name": "TIGER MSCI US 리츠(합성H)",
     "ticker": "182480",
     "category": "Kor Stock",
-    "current_price": 13805.0,
+    "current_price": 13745.0,
     "changes": {
-      "day_1": 0.4,
-      "day_7": 3.95,
-      "day_30": 9.61,
-      "day_60": 4.11
+      "day_1": -0.43,
+      "day_7": 2.27,
+      "day_30": 9.13,
+      "day_60": 3.66
     }
   },
   "232080": {
     "name": "TIGER KOSDAQ150",
     "ticker": "232080",
     "category": "Kor Stock",
-    "current_price": 20300.0,
+    "current_price": 20150.0,
     "changes": {
-      "day_1": 0.87,
-      "day_7": 6.2,
-      "day_30": 4.37,
-      "day_60": -1.6
+      "day_1": -0.74,
+      "day_7": 1.74,
+      "day_30": 3.6,
+      "day_60": -2.33
     }
   },
   "360200": {
     "name": "ACE 미국S&P500",
     "ticker": "360200",
     "category": "Kor Stock",
-    "current_price": 26295.0,
+    "current_price": 26330.0,
     "changes": {
-      "day_1": 0.08,
-      "day_7": 2.67,
-      "day_30": 6.78,
-      "day_60": 5.29
+      "day_1": 0.13,
+      "day_7": 2.07,
+      "day_30": 6.92,
+      "day_60": 5.43
     }
   },
   "361580": {
     "name": "KBSTAR 200 Total Return",
     "ticker": "361580",
     "category": "Kor Stock",
-    "current_price": 54895.0,
+    "current_price": 54695.0,
     "changes": {
-      "day_1": 2.61,
-      "day_7": 7.26,
-      "day_30": 19.78,
-      "day_60": 12.49
+      "day_1": -0.36,
+      "day_7": 4.24,
+      "day_30": 19.34,
+      "day_60": 12.08
     }
   },
   "379800": {
     "name": "KODEX S&P500",
     "ticker": "379800",
     "category": "Kor Stock",
-    "current_price": 23775.0,
+    "current_price": 23820.0,
     "changes": {
-      "day_1": 0.06,
-      "day_7": 2.68,
-      "day_30": 6.81,
-      "day_60": 5.32
+      "day_1": 0.19,
+      "day_7": 2.17,
+      "day_30": 7.01,
+      "day_60": 5.51
     }
   },
   "379810": {
     "name": "KODEX 미국나스닥100(TR)",
     "ticker": "379810",
     "category": "Kor Stock",
-    "current_price": 26050.0,
+    "current_price": 26150.0,
     "changes": {
-      "day_1": 0.15,
-      "day_7": 4.18,
-      "day_30": 9.04,
-      "day_60": 9.0
+      "day_1": 0.38,
+      "day_7": 3.4,
+      "day_30": 9.46,
+      "day_60": 9.41
     }
   },
   "438080": {
     "name": "KINDEX S&P500 3070 Blend",
     "ticker": "438080",
     "category": "Kor Stock",
-    "current_price": 14325.0,
+    "current_price": 14380.0,
     "changes": {
-      "day_1": -0.24,
-      "day_7": 1.02,
-      "day_30": 2.32,
-      "day_60": 3.8
+      "day_1": 0.38,
+      "day_7": 1.2,
+      "day_30": 2.71,
+      "day_60": 4.2
     }
   },
   "032620": {
     "name": "유비케어",
     "ticker": "032620",
     "category": "Kor Stock",
-    "current_price": 4235.0,
+    "current_price": 4170.0,
     "changes": {
-      "day_1": -0.82,
-      "day_7": 0.95,
-      "day_30": 8.59,
-      "day_60": 0.71
+      "day_1": -1.53,
+      "day_7": -0.71,
+      "day_30": 6.92,
+      "day_60": -0.83
     }
   },
   "0163Y0": {
     "name": "KoAct 코스닥액티브",
     "ticker": "0163Y0",
     "category": "Kor Stock",
-    "current_price": 12880.0,
+    "current_price": 12805.0,
     "changes": {
-      "day_1": 0.35,
-      "day_7": 5.49,
-      "day_30": 6.62,
+      "day_1": -0.58,
+      "day_7": 1.87,
+      "day_30": 6.0,
       "day_60": null
     }
   },
@@ -315,84 +315,84 @@
     "name": "QQQM",
     "ticker": "QQQM",
     "category": "US Stock",
-    "current_price": 266.4649963378906,
+    "current_price": 265.3099975585938,
     "changes": {
-      "day_1": 0.06,
-      "day_7": 2.97,
-      "day_30": 11.19,
-      "day_60": 6.3
+      "day_1": -0.37,
+      "day_7": 2.52,
+      "day_30": 10.71,
+      "day_60": 5.84
     }
   },
   "SCHD": {
     "name": "SCHD",
     "ticker": "SCHD",
     "category": "US Stock",
-    "current_price": 31.03070068359375,
+    "current_price": 30.97999954223633,
     "changes": {
-      "day_1": 0.0,
-      "day_7": 1.04,
-      "day_30": 2.11,
-      "day_60": -1.83
+      "day_1": -0.16,
+      "day_7": 0.88,
+      "day_30": 1.94,
+      "day_60": -1.99
     }
   },
   "SPYM": {
     "name": "SPYM",
     "ticker": "SPYM",
     "category": "US Stock",
-    "current_price": 83.32499694824219,
+    "current_price": 82.87000274658203,
     "changes": {
-      "day_1": -0.11,
-      "day_7": 1.94,
-      "day_30": 9.16,
-      "day_60": 2.73
+      "day_1": -0.66,
+      "day_7": 1.38,
+      "day_30": 8.57,
+      "day_60": 2.17
     }
   },
   "MSTR": {
     "name": "MSTR",
     "ticker": "MSTR",
     "category": "US Stock",
-    "current_price": 168.4423980712891,
+    "current_price": 163.9700012207031,
     "changes": {
-      "day_1": -1.39,
-      "day_7": 22.58,
-      "day_30": 24.17,
-      "day_60": 28.53
+      "day_1": -4.0,
+      "day_7": 19.33,
+      "day_30": 20.87,
+      "day_60": 25.12
     }
   },
   "VIG": {
     "name": "VIG",
     "ticker": "VIG",
     "category": "US Stock",
-    "current_price": 226.8600006103516,
+    "current_price": 226.1699981689453,
     "changes": {
-      "day_1": -0.21,
-      "day_7": 1.34,
-      "day_30": 6.53,
-      "day_60": -0.31
+      "day_1": -0.51,
+      "day_7": 1.03,
+      "day_30": 6.2,
+      "day_60": -0.62
     }
   },
   "BTC_USDT": {
     "name": "Bitcoin",
     "ticker": "BTC_USDT",
     "category": "Crypto",
-    "current_price": 75772.296875,
+    "current_price": 76355.7421875,
     "changes": {
-      "day_1": -0.24,
-      "day_7": 2.54,
-      "day_30": 10.59,
-      "day_60": 11.41
+      "day_1": 0.53,
+      "day_7": 3.33,
+      "day_30": 11.44,
+      "day_60": 12.27
     }
   },
   "ETH_USDT": {
     "name": "Ethereum",
     "ticker": "ETH_USDT",
     "category": "Crypto",
-    "current_price": 2304.5,
+    "current_price": 2326.800048828125,
     "changes": {
-      "day_1": -0.5,
-      "day_7": -0.67,
-      "day_30": 12.28,
-      "day_60": 16.73
+      "day_1": 0.46,
+      "day_7": 0.3,
+      "day_30": 13.37,
+      "day_60": 17.86
     }
   }
 }
