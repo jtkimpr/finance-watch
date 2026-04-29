@@ -145,11 +145,19 @@ log "GIT PULL: 성공 — $PULL_RESULT"
 if [ "$STASHED" = true ]; then
   git stash pop 2>&1
   # xlsx 충돌 시 GitHub Actions 최신 버전 우선 채택
-  if ! git diff --quiet -- data/watchlist.xlsx 2>/dev/null || git ls-files --unmerged | grep -q watchlist.xlsx; then
+  if git ls-files --unmerged | grep -q watchlist.xlsx; then
     git checkout --ours -- data/watchlist.xlsx
-    log "INFO: stash 복원 — xlsx 충돌 발생, GitHub Actions 버전으로 자동 해결"
+    git add data/watchlist.xlsx
+    log "INFO: stash 복원 — xlsx 충돌 발생, GitHub Actions 버전으로 자동 해결 (index 정리 완료)"
   else
     log "INFO: stash 복원 완료"
+  fi
+  # 그 외 파일이 unmerged 상태로 남아있으면 다음 pull이 막히므로 강제 정리
+  if git ls-files --unmerged | grep -q .; then
+    UNMERGED_FILES=$(git ls-files --unmerged | awk '{print $4}' | sort -u | tr '\n' ' ')
+    git checkout --theirs -- $UNMERGED_FILES 2>/dev/null
+    git add $UNMERGED_FILES 2>/dev/null
+    log "WARN: 추가 unmerged 파일 강제 해소 — $UNMERGED_FILES"
   fi
 fi
 
