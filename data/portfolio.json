@@ -7,8 +7,8 @@
       "category": "Crypto",
       "currency": "USD",
       "qty": 1.7917024700000002,
-      "price": 78153.25,
-      "valuation": 205999866.66639787
+      "price": 78227.1328125,
+      "valuation": 206184799.13870308
     },
     {
       "name": "Ethereum",
@@ -17,8 +17,8 @@
       "category": "Crypto",
       "currency": "USD",
       "qty": 1.4574212599999998,
-      "price": 2301.25,
-      "valuation": 4934042.726994265
+      "price": 2303.699951171875,
+      "valuation": 4939060.573258797
     },
     {
       "name": "KRW",
@@ -48,7 +48,7 @@
       "currency": "USD",
       "qty": 10.89383819,
       "price": 1.0,
-      "valuation": 16026.361114836602
+      "valuation": 16025.598546163299
     },
     {
       "name": "KINDEX KRX금현물",
@@ -110,8 +110,8 @@
       "category": "Crypto",
       "currency": "USD",
       "qty": 0.27719728,
-      "price": 78153.25,
-      "valuation": 31870583.244933605
+      "price": 78227.1328125,
+      "valuation": 31899194.45642938
     },
     {
       "name": "Ethereum",
@@ -120,8 +120,8 @@
       "category": "Crypto",
       "currency": "USD",
       "qty": 3.37361939,
-      "price": 2301.25,
-      "valuation": 11421256.620667337
+      "price": 2303.699951171875,
+      "valuation": 11432871.864604468
     },
     {
       "name": "KODEX KOFR금리액티브(합성)",
@@ -202,8 +202,8 @@
       "category": "Crypto",
       "currency": "USD",
       "qty": 0.18921629,
-      "price": 78153.25,
-      "valuation": 21755024.15370922
+      "price": 78227.1328125,
+      "valuation": 21774554.313931704
     },
     {
       "name": "Ethereum",
@@ -212,8 +212,8 @@
       "category": "Crypto",
       "currency": "USD",
       "qty": 1.42834823,
-      "price": 2301.25,
-      "valuation": 4835617.119957914
+      "price": 2303.699951171875,
+      "valuation": 4840534.868879975
     },
     {
       "name": "TIGER MSCI US 리츠(합성H)",
@@ -410,9 +410,9 @@
     }
   ],
   "_prev_totals": {
-    "Susie": 612719768.5960325,
+    "Susie": 611220421.7545071,
     "Dirac & Broglie": 4231547952.1444325,
-    "Jintae": 866041918.0884435,
-    "Hyunhee": 244082139.8368294
+    "Jintae": 865729757.865601,
+    "Hyunhee": 243891335.27366713
   }
 }
